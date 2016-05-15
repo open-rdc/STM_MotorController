@@ -9,11 +9,11 @@
  *
  * Example:
  * @code
- * // MakisumiACMotor Control
+ * // STM_BLDCMotor Control
  * #include "mbed.h"
- * #include "MakisumiACMotor.h"
+ * #include "STM_BLDCMotor.h"
  *
- * MakisumiACMotor acmotor();
+ * STM_BLDCMotor acmotor();
  *
  * int main(){
  * int previous_hole_state = 6;
@@ -30,14 +30,14 @@
  */
 
 
-class MakisumiACMotor
+class STM_BLDCMotor
 {
 public:
     /** Create a new SoftwarePWM object on any mbed pin
       *
       * @param Pin Pin on mbed to connect PWM device to
      */
-    MakisumiACMotor(PinName Ppwm);
+    STM_BLDCMotor(PinName Ppwm);
 
     void servoOn(void);
 
@@ -60,12 +60,12 @@ public:
 #ifdef MBED_OPERATORS
     /** A operator shorthand for write()
      */
-    MakisumiACMotor& operator= (float value) {
+    STM_BLDCMotor& operator= (float value) {
         write(value);
         return *this;
     }
 
-    MakisumiACMotor& operator= (MakisumiACMotor& rhs) {
+    STM_BLDCMotor& operator= (STM_BLDCMotor& rhs) {
         write(rhs.read());
         return *this;
     }
@@ -78,9 +78,6 @@ public:
 #endif
 
 private:
-		InterruptIn pwm_int_;
-		PwmOut pwm_;
-
 		InterruptIn hole1_;
 		InterruptIn hole2_;
 		InterruptIn hole3_;
@@ -94,11 +91,7 @@ private:
 
     static int switching_table[6][3];
     void drive(int u, int v, int w);
-    void pwmRise(void);
-    void pwmFall(void);
 
-		int on_swtiching_ptn[6];
-		int off_swtiching_ptn[6];
 		enum h_bridge{
 			UH = 0,
 			UL,
@@ -107,7 +100,6 @@ private:
 			WH,
 			WL,
 		};
-		bool underChanging;
 };
 
 #endif

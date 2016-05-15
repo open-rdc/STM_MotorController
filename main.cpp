@@ -1,7 +1,7 @@
 //#define R2
 
 #include "mbed.h"
-#include "MakisumiACMotor.h"
+#include "STM_BLDCMotor.h"
 #include "AS5600.h"
 
 #if defined(L1)
@@ -40,7 +40,7 @@
 
 BusOut led(LED2, LED3, LED4);
 BusIn sw(SW1, SW2);
-MakisumiACMotor acmotor(LED1);
+STM_BLDCMotor acmotor(LED1);
 AS5600 as5600(I2C_SDA, I2C_SCL);
 Serial serial(USBTX, USBRX);
 Timer t;

@@ -7,7 +7,7 @@
 
   <Targets>
     <Target>
-      <TargetName>Nucleo_blink_led</TargetName>
+      <TargetName>STM_MotorController</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
       <TargetOption>
@@ -45,7 +45,7 @@
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
           <OutputDirectory>.\build\</OutputDirectory>
-          <OutputName>Nucleo_blink_led</OutputName>
+          <OutputName>STM_MotorController</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>0</CreateHexFile>
@@ -1165,6 +1165,21 @@
               <FileType>5</FileType>
               <FilePath>.\Watchdog.h</FilePath>
             </File>
+            <File>
+              <FileName>AS5600.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\AS5600.h</FilePath>
+            </File>
+            <File>
+              <FileName>RS485.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\RS485.h</FilePath>
+            </File>
+            <File>
+              <FileName>STM_BLDCMotor.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\STM_BLDCMotor.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1439,6 +1454,21 @@
               <FileName>Watchdog.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>.\Watchdog.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>AS5600.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\AS5600.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>RS485.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\RS485.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>STM_BLDCMotor.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\STM_BLDCMotor.cpp</FilePath>
             </File>
           </Files>
         </Group>

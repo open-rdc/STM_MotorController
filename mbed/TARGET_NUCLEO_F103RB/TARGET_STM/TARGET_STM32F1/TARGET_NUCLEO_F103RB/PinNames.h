@@ -148,11 +148,14 @@ typedef enum {
     LED2        = PA_5,
     LED3        = PA_6,
     LED4        = PA_7,
+    
     SW1         = PB_3,
     SW2         = PB_4,
-		MOTOR_HOLE1 = PC_13,
+		
+    MOTOR_HOLE1 = PC_13,
 		MOTOR_HOLE2 = PC_14,
 		MOTOR_HOLE3 = PC_15,
+    
 		MOTOR_UL = PA_8,
 		MOTOR_VL = PA_9,
 		MOTOR_WL = PA_10,
@@ -160,12 +163,13 @@ typedef enum {
 		MOTOR_VH = PB_14,
 		MOTOR_WH = PB_15,
 
-    SERIAL_TX   = PA_2,
-    SERIAL_RX   = PA_3,
-    USBTX       = PA_2,
-    USBRX       = PA_3,
-    I2C_SCL     = PB_8,
-    I2C_SDA     = PB_9,
+    RS485_TX   = PA_2,
+    RS485_RX   = PA_3,
+    RS485_SELECT = PA_1,
+        
+    I2C_SCL     = PB_6,
+    I2C_SDA     = PB_7,
+    
     SPI_MOSI    = PA_7,
     SPI_MISO    = PA_6,
     SPI_SCK     = PA_5,

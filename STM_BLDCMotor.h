@@ -78,6 +78,13 @@ public:
 #endif
 
 private:
+		PwmOut uh;
+		PwmOut ul;
+		PwmOut vh;
+		PwmOut vl;
+		PwmOut wh;
+		PwmOut wl;
+		
 		InterruptIn hole1_;
 		InterruptIn hole2_;
 		InterruptIn hole3_;

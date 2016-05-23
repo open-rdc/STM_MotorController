@@ -362,7 +362,7 @@
               <MiscControls>--gnu --no_rtti --restrict --apcs=interwork -c -O3 -I"C:/Program Files/ARM/armcc_4.1_791/include" --split_sections --multibyte_chars --brief_diagnostics --library_type=microlib -D__ASSERT_MSG --no_depend_system_headers --md --cpu=Cortex-M3 -Otime --gnu --brief_diagnostics --library_type=microlib --cpu=Cortex-M3 --apcs=interwork</MiscControls>
               <Define>TARGET_FF_ARDUINO, TARGET_NUCLEO_F103RB, TARGET_FF_MORPHO, TARGET_LIKE_CORTEX_M3, TARGET_CORTEX_M, TOOLCHAIN_ARM_MICRO, TARGET_STM32F1, __MBED__=1, ARM_MATH_CM3, MBED_BUILD_TIMESTAMP=1463274975, TARGET_STM, __CORTEX_M3, TARGET_M3, TOOLCHAIN_ARM, TARGET_STM32F103RB, TARGET_LIKE_MBED, __ASSERT_MSG</Define>
               <Undefine></Undefine>
-              <IncludePath>.; mbed; mbed/TARGET_NUCLEO_F103RB; mbed/TARGET_NUCLEO_F103RB/TARGET_STM; mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1; mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/TARGET_NUCLEO_F103RB; mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_MICRO</IncludePath>
+              <IncludePath>.;L152RE_USBDevice;L152RE_USBDevice/USBDevice;L152RE_USBDevice/USBSerial;STM32_USB48MHz;mbed;mbed/TARGET_NUCLEO_F103RB;mbed/TARGET_NUCLEO_F103RB/TARGET_STM;mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1;mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/TARGET_NUCLEO_F103RB;mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_MICRO</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -1180,11 +1180,76 @@
               <FileType>5</FileType>
               <FilePath>.\STM_BLDCMotor.h</FilePath>
             </File>
+            <File>
+              <FileName>STM32_USB48MHz.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\STM32_USB48MHz\STM32_USB48MHz.h</FilePath>
+            </File>
+            <File>
+              <FileName>CircBuffer.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\L152RE_USBDevice\USBSerial\CircBuffer.h</FilePath>
+            </File>
+            <File>
+              <FileName>USBCDC.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\L152RE_USBDevice\USBSerial\USBCDC.h</FilePath>
+            </File>
+            <File>
+              <FileName>USBSerial.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\L152RE_USBDevice\USBSerial\USBSerial.h</FilePath>
+            </File>
+            <File>
+              <FileName>USBEndpoints.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\L152RE_USBDevice\USBDevice\USBEndpoints.h</FilePath>
+            </File>
+            <File>
+              <FileName>USBEndpoints_KL25Z.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\L152RE_USBDevice\USBDevice\USBEndpoints_KL25Z.h</FilePath>
+            </File>
+            <File>
+              <FileName>USBEndpoints_LPC11U.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\L152RE_USBDevice\USBDevice\USBEndpoints_LPC11U.h</FilePath>
+            </File>
+            <File>
+              <FileName>USBEndpoints_LPC17_LPC23.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\L152RE_USBDevice\USBDevice\USBEndpoints_LPC17_LPC23.h</FilePath>
+            </File>
+            <File>
+              <FileName>USBEndpoints_Maxim.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\L152RE_USBDevice\USBDevice\USBEndpoints_Maxim.h</FilePath>
+            </File>
+            <File>
+              <FileName>USBEndpoints_RZ_A1H.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\L152RE_USBDevice\USBDevice\USBEndpoints_RZ_A1H.h</FilePath>
+            </File>
+            <File>
+              <FileName>USBEndpoints_STM32F4.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\L152RE_USBDevice\USBDevice\USBEndpoints_STM32F4.h</FilePath>
+            </File>
+            <File>
+              <FileName>USBEndpoints_STM32L1.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\L152RE_USBDevice\USBDevice\USBEndpoints_STM32L1.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>Source Files</GroupName>
           <Files>
+            <File>
+              <FileName>STM32_USB48MHz.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\STM32_USB48MHz\STM32_USB48MHz.cpp</FilePath>
+            </File>
             <File>
               <FileName>board.o</FileName>
               <FileType>3</FileType>
@@ -1446,16 +1511,6 @@
               <FilePath>mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_MICRO/sys.o</FilePath>
             </File>
             <File>
-              <FileName>system_stm32f1xx.o</FileName>
-              <FileType>3</FileType>
-              <FilePath>mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_MICRO/system_stm32f1xx.o</FilePath>
-            </File>
-            <File>
-              <FileName>Watchdog.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>.\Watchdog.cpp</FilePath>
-            </File>
-            <File>
               <FileName>AS5600.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>.\AS5600.cpp</FilePath>
@@ -1469,6 +1524,31 @@
               <FileName>STM_BLDCMotor.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>.\STM_BLDCMotor.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>system_stm32f1xx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\system_stm32f1xx.c</FilePath>
+            </File>
+            <File>
+              <FileName>USBCDC.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\L152RE_USBDevice\USBSerial\USBCDC.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>USBSerial.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\L152RE_USBDevice\USBSerial\USBSerial.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>USBDevice.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\L152RE_USBDevice\USBDevice\USBDevice.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>USBHAL_STM32L1.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\L152RE_USBDevice\USBDevice\USBHAL_STM32L1.cpp</FilePath>
             </File>
           </Files>
         </Group>

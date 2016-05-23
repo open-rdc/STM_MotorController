@@ -23,16 +23,10 @@ int STM_BLDCMotor::switching_table[6] [3] = {
 		{ -1, 0, 1 }, // STATE6
 };
 
-PwmOut uh(MOTOR_UH);
-PwmOut ul(MOTOR_UL);
-PwmOut vh(MOTOR_VH);
-PwmOut vl(MOTOR_VL);
-PwmOut wh(MOTOR_WH);
-PwmOut wl(MOTOR_WL);
-
 STM_BLDCMotor::STM_BLDCMotor(PinName Ppwm)
 	: hole1_(MOTOR_HOLE1), hole2_(MOTOR_HOLE2), hole3_(MOTOR_HOLE3),
-	max_ratio_(0.5), enable_(false)
+		uh(MOTOR_UH), ul(MOTOR_UL), vh(MOTOR_VH), vl(MOTOR_VL), wh(MOTOR_WH), wl(MOTOR_WL),
+		max_ratio_(0.5), enable_(false)
 {
 	// holeÇÃäÑçûÇ›ÇÃóDêÊèáà Çè„Ç∞ÇÈ
 	hole1_.mode(PullUp);

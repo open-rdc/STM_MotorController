@@ -23,18 +23,24 @@ int STM_BLDCMotor::switching_table[6] [3] = {
 		{ -1, 0, 1 }, // STATE6
 };
 
-STM_BLDCMotor::STM_BLDCMotor(PinName Ppwm)
-	: hole1_(MOTOR_HOLE1), hole2_(MOTOR_HOLE2), hole3_(MOTOR_HOLE3),
-		uh(MOTOR_UH), ul(MOTOR_UL), vh(MOTOR_VH), vl(MOTOR_VL), wh(MOTOR_WH), wl(MOTOR_WL),
+STM_BLDCMotor::STM_BLDCMotor(void)
+	:	uh_(MOTOR_UH), ul_(MOTOR_UL), vh_(MOTOR_VH), vl_(MOTOR_VL), wh_(MOTOR_WH), wl_(MOTOR_WL),
+	  hole1_(MOTOR_HOLE1), hole2_(MOTOR_HOLE2), hole3_(MOTOR_HOLE3),
 		max_ratio_(0.5), enable_(false)
 {
 	// hole‚ÌŠ„ž‚Ý‚Ì—Dæ‡ˆÊ‚ðã‚°‚é
 	hole1_.mode(PullUp);
 	hole2_.mode(PullUp);
 	hole3_.mode(PullUp);
+	hole1_.rise(this, &STM_BLDCMotor::status_changed);
+	hole1_.fall(this, &STM_BLDCMotor::status_changed);
+	hole2_.rise(this, &STM_BLDCMotor::status_changed);
+	hole2_.fall(this, &STM_BLDCMotor::status_changed);
+	hole3_.rise(this, &STM_BLDCMotor::status_changed);
+	hole3_.fall(this, &STM_BLDCMotor::status_changed);
 	
 	setPwmPeriod(1.0 / PWM_FREQUENCY);
-	ul = uh = vl = vh = wl = wh = 0;
+	ul_ = uh_ = vl_ = vh_ = wl_ = wh_ = 0;
 	
 	this->write(0);
 }
@@ -57,18 +63,14 @@ void STM_BLDCMotor::setMaxDutyRatio(float max_ratio)
 void STM_BLDCMotor::setPwmPeriod(double seconds)
 {
   period_sec_ = seconds;
-	uh.period(period_sec_);
-	ul.period(period_sec_);
-	vh.period(period_sec_);
-	vl.period(period_sec_);
-	wh.period(period_sec_);
-	wl.period(period_sec_);
+	uh_.period(period_sec_);
+	vh_.period(period_sec_);
+	wh_.period(period_sec_);
 }
 
 void STM_BLDCMotor::write(double value)
 {
-	value_ = max(min(value, 1.0), -1.0);
-//	pwm_ = min(fabs(max_ratio_ * value_), 1.0);
+	value_ = max(min(value, max_ratio_), -max_ratio_);
 }
 
 float STM_BLDCMotor::read()
@@ -82,7 +84,7 @@ int STM_BLDCMotor::getHoleState()
 	int h2 = hole2_;
 	int h3 = hole3_;
 	
-	hole_state = (h1 << 2) + (h2 << 1) + h3;
+	hole_state = (h3 << 2) + (h2 << 1) + h1;
 
 	return hole_state;
 }
@@ -97,6 +99,7 @@ void STM_BLDCMotor::status_changed(void)
 	hole_state_no = 0;
 	int dir = (value_ >= 0.0) ? 1 : -2;
 	
+	getHoleState();
 	switch(hole_state){
 		case HOLE_STATE0:
 			hole_state_no = 0; break;
@@ -131,11 +134,12 @@ void STM_BLDCMotor::status_changed(void)
 void STM_BLDCMotor::drive(int u, int v, int w)
 {
 	// ŠÑ’Ê“d—¬‚Ì–â‘è
-	float val = value_;
-	uh = (u == 1) ? val : 0.0;
-	ul = (u == -1) ? val : 0.0;
-	vh = (v == 1) ? val : 0.0;
-	vl = (v == -1) ? val : 0.0;
-	wh = (w == 1) ? val : 0.0;
-	wl = (w == -1) ? val : 0.0;
+	double val = fabs(value_);
+
+	uh_ = (u == 1) ? val : 0.0;
+	ul_ = (u == -1) ? 1 : 0;
+	vh_ = (v == 1) ? val : 0.0;
+	vl_ = (v == -1) ? 1 : 0;
+	wh_ = (w == 1) ? val : 0.0;
+	wl_ = (w == -1) ? 1 : 0;
 }

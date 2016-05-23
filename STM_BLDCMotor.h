@@ -37,7 +37,7 @@ public:
       *
       * @param Pin Pin on mbed to connect PWM device to
      */
-    STM_BLDCMotor(PinName Ppwm);
+    STM_BLDCMotor(void);
 
     void servoOn(void);
 
@@ -78,12 +78,12 @@ public:
 #endif
 
 private:
-		PwmOut uh;
-		PwmOut ul;
-		PwmOut vh;
-		PwmOut vl;
-		PwmOut wh;
-		PwmOut wl;
+		PwmOut uh_;
+		DigitalOut ul_;
+		PwmOut vh_;
+		DigitalOut vl_;
+		PwmOut wh_;
+		DigitalOut wl_;
 		
 		InterruptIn hole1_;
 		InterruptIn hole2_;

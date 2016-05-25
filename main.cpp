@@ -27,87 +27,70 @@ Timer t;
 const int MAX_COMMAND_LEN = 100; 
 unsigned char command_data[MAX_COMMAND_LEN];
 int command_len = 0;
+const int LED_COUNT_MAX = 100;
 
 struct RobotStatus{
   float target_angle;
+  float gain;
+  float max_torque;
   bool is_servo_on;
   bool change_target;
+  bool isWakeupMode;
+  int led_state;
+  int led_count;
 } status;
 
 void initialize()
 {
   status.target_angle = 0;
+  status.gain = GAIN;
+  status.max_torque = 1.0;
   status.is_servo_on = false;
+  status.led_state = 0;
+  status.led_count = 0;
   status.change_target = false;
+  status.isWakeupMode = true;
 }
 
-void isrRx() {  
+void isrRx() {
 	while(rs485.readable()){
     command_data[command_len ++] = rs485.getc();
   }
   if (command_len > 0){
-    if (commnand_parser.setCommand(command_data, command_len))
-    {
-      status.change_target = true;
-    }
+    commnand_parser.setCommand(command_data, command_len);
   }
 }
 
 int main() {
-	int previous_hole_state = 6;
-	float gain = GAIN, max_value = 1.0;
-	int counter = 25, led_counter  = 100, led_state = 0;
-	bool is_low_gain = true;
+	int counter = 25;
 	initialize();
 	blink_led = 0;
 	sw.mode(PullUp);
+  
 	rs485.attach(isrRx, Serial::RxIrq);
 	rs485.baud(BAUDRATE);
 	
 	as5600 = as5600;
+  t.reset();
+  t.start();
 	while(1){
 		float angle = as5600;
-//		printf("%f\r\n", angle);
 		if (as5600.getError()) break;
-		if (is_low_gain){
-			if(fabs(angle - status.target_angle) < 0.1){
-        motor.setMaxDutyRatio(0.5);
-				is_low_gain = false;
-			}
-		}
-		float val = max(min(gain * (angle - status.target_angle), max_value), -max_value);
+		float val = max(min(status.gain * (angle - status.target_angle),
+      status.max_torque), -status.max_torque);
 		motor = (double)val;
 		if (status.change_target){
 			motor.status_changed();
 			status.change_target = false;
 		}
-		if (sw[0] == 0 && counter == 0){
-			status.target_angle += 0.1;
-			counter = 25;
-		}
-		if (sw[1] == 0 && counter == 0){
-			status.target_angle -= 0.1;
-			counter = 25;
-		}
-		if (counter > 0) counter --;
-		if (led_counter == 0){
-			led_state ^= 1;
-			blink_led = led_state;
-			led_counter = 100;
-		}	
-		led_counter --;
-		t.reset();
-		t.start();
-		while(t.read() < 0.020f){
-			if (motor.getHoleState() != previous_hole_state){
-				motor.status_changed();
-				previous_hole_state = motor.getHoleState();
-//				printf("%d\r\n", previous_hole_state);
-			}
+		status.led_count ++;
+		if (status.led_count >= LED_COUNT_MAX){
+			status.led_state ^= 1;
+			blink_led = status.led_state;
+			status.led_count = 0;
 		}
 	}
 	motor = 0;
 	motor.status_changed();
-	blink_led = 0x02;
-	while(1);
+	blink_led = 0;
 }

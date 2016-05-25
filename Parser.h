@@ -11,6 +11,7 @@
 class Parser
 {
   static const int MAX_COMMAND_LEN = 256;
+  static const int MAX_STOCKED_COMMAND = 10;
 public:
   Parser(int id);
 
@@ -19,14 +20,12 @@ public:
   }
 
   bool setCommand(unsigned char *command_data, int command_len);
-
-  int getCommand();
+  
+  void setId(int id);
 
   int getId();
 
-  int getNextAddress();
-
-  int getNextData();
+  int getNextCommand(int *address, int *data);
 
 private:
   unsigned char* command_buf;
@@ -34,8 +33,8 @@ private:
   int id;
   int command;
   int option;
-  int address[10];
-  int data[10];
+  int address[MAX_STOCKED_COMMAND];
+  int data[MAX_STOCKED_COMMAND];
   int stocked_data_len;
 };
 

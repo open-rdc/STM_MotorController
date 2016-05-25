@@ -23,7 +23,7 @@ int STM_BLDCMotor::switching_table[6] [3] = {
 		{ -1, 0, 1 }, // STATE6
 };
 
-STM_BLDCMotor::STM_BLDCMotor(void)
+STM_BLDCMotor::STM_BLDCMotor()
 	:	uh_(MOTOR_UH), ul_(MOTOR_UL), vh_(MOTOR_VH), vl_(MOTOR_VL), wh_(MOTOR_WH), wl_(MOTOR_WL),
 	  hole1_(MOTOR_HOLE1), hole2_(MOTOR_HOLE2), hole3_(MOTOR_HOLE3),
 		max_ratio_(0.5), enable_(false)

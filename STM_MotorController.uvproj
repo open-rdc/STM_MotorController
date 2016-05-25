@@ -344,7 +344,7 @@
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
-            <Optim>1</Optim>
+            <Optim>4</Optim>
             <oTime>0</oTime>
             <SplitLS>0</SplitLS>
             <OneElfS>0</OneElfS>
@@ -1381,11 +1381,6 @@
               <FilePath>mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_MICRO/stm32f1xx_hal_i2s.o</FilePath>
             </File>
             <File>
-              <FileName>stm32f1xx_hal_irda.o</FileName>
-              <FileType>3</FileType>
-              <FilePath>mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_MICRO/stm32f1xx_hal_irda.o</FilePath>
-            </File>
-            <File>
               <FileName>stm32f1xx_hal_iwdg.o</FileName>
               <FileType>3</FileType>
               <FilePath>mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_MICRO/stm32f1xx_hal_iwdg.o</FilePath>
@@ -1549,6 +1544,11 @@
               <FileName>USBHAL_STM32L1.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>.\L152RE_USBDevice\USBDevice\USBHAL_STM32L1.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>Parser.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\Parser.cpp</FilePath>
             </File>
           </Files>
         </Group>

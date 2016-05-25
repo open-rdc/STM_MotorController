@@ -1,7 +1,7 @@
 // Chiba Institute of Technology
 
-#ifndef MAKISUMI_ACMOTOR_H
-#define MAKISUMI_ACMOTOR_H
+#ifndef STM_BLDCMOTOR_H
+#define STM_BLDCMOTOR_H
 
 #include "mbed.h"
 
@@ -37,7 +37,7 @@ public:
       *
       * @param Pin Pin on mbed to connect PWM device to
      */
-    STM_BLDCMotor(void);
+    STM_BLDCMotor();
 
     void servoOn(void);
 

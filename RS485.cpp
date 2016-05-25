@@ -37,7 +37,7 @@ ssize_t RS485::write(const void* buffer, size_t length)
 {
 	char *buf = (char *)buffer;
 	for(int i = 0; i < length; i ++){
-		putc(*buf++);
+		this->putc(*buf++);
 	}
 	
 	return length;

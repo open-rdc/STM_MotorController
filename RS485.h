@@ -3,6 +3,24 @@
 #ifndef RS485_H
 #define RS485_H
 
+/** Class to communicate with RS485
+ *
+ * Exmaple
+ * @code
+ *
+ * #include "mbed.h" 
+ * #include "RS485.h" 
+ *
+ * RS485 rs485(RS485_TX, RS485_RX, RS485_SELECT); 
+ * 
+ * int main() {
+ * 	while(1) {
+ *		  rs485.printf("Hello World\r\n");
+ *		  wait(0.5);
+ *	  }
+ * }
+ */
+
 #include "mbed.h"
 
 class RS485 : public Serial

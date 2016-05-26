@@ -27,13 +27,14 @@ RS485 rs485(RS485_TX, RS485_RX, RS485_SELECT);
 Parser commnand_parser(0);
 Timer t;
 
-const int MAX_COMMAND_LEN = 100; 
+const int MAX_COMMAND_LEN = 256; 
 unsigned char command_data[MAX_COMMAND_LEN];
 int command_len = 0;
-const int LED_COUNT_MAX = 100;
+const int LED_COUNT_MAX = 500;
 
 struct RobotStatus{
   float target_angle;
+  float current_angle;
   float gain;
   float max_torque;
   bool is_servo_on;
@@ -46,6 +47,7 @@ struct RobotStatus{
 void initialize()
 {
   status.target_angle = 0;
+  status.current_angle = 0;
   status.gain = GAIN;
   status.max_torque = 1.0;
   status.is_servo_on = false;
@@ -60,6 +62,9 @@ int main() {
 	blink_led = 0;
 	sw.mode(PullUp);
   rs485.baud(BAUDRATE);
+	as5600 = as5600;
+  t.reset();
+  t.start();
   
   while(1){
     status.led_count ++;
@@ -74,32 +79,21 @@ int main() {
       led2 = led2 ^ 1;
     }
     command_len = 0;
-    wait(0.001);
-  }
-	
-#if 0  
-	as5600 = as5600;
-  t.reset();
-  t.start();
-	while(1){
-		float angle = as5600;
+
+		status.current_angle = as5600;
 		if (as5600.getError()) break;
-		float val = max(min(status.gain * (angle - status.target_angle),
+		float val = max(min(status.gain * (status.current_angle - status.target_angle),
       status.max_torque), -status.max_torque);
-		motor = (double)val;
+		motor = (double)0.1;
+    
 		if (status.change_target){
 			motor.status_changed();
 			status.change_target = false;
 		}
-		status.led_count ++;
-		if (status.led_count >= LED_COUNT_MAX){
-			status.led_state ^= 1;
-			blink_led = status.led_state;
-			status.led_count = 0;
-		}
-	}
+    wait(0.001);
+  }
+  motor.servoOn();
 	motor = 0;
 	motor.status_changed();
 	blink_led = 0;
-#endif
 }

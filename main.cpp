@@ -7,7 +7,7 @@
 #define MAX_ANGLE 0
 #define MIN_ANGLE -45
 #define GAIN 10.0
-#define BAUDRATE 57600
+#define BAUDRATE 115200
 
 #ifndef M_PI
 #define M_PI           3.14159265358979323846f
@@ -17,6 +17,9 @@
 #define min(a, b) ((a) < (b) ? (a) : (b))
 
 DigitalOut blink_led(LED1);
+DigitalOut led2(LED2);
+DigitalOut led3(LED3);
+DigitalOut led4(LED4);
 BusIn sw(SW1, SW2);
 STM_BLDCMotor motor;
 AS5600 as5600(I2C_SDA, I2C_SCL);
@@ -52,24 +55,29 @@ void initialize()
   status.isWakeupMode = true;
 }
 
-void isrRx() {
-	while(rs485.readable()){
-    command_data[command_len ++] = rs485.getc();
-  }
-  if (command_len > 0){
-    commnand_parser.setCommand(command_data, command_len);
-  }
-}
-
 int main() {
-	int counter = 25;
 	initialize();
 	blink_led = 0;
 	sw.mode(PullUp);
+  rs485.baud(BAUDRATE);
   
-	rs485.attach(isrRx, Serial::RxIrq);
-	rs485.baud(BAUDRATE);
+  while(1){
+    status.led_count ++;
+    if (status.led_count > LED_COUNT_MAX){
+      status.led_state ^= 1;
+      blink_led = status.led_state;
+      status.led_count = 0;
+    }
+
+    command_len = rs485.read(command_data, MAX_COMMAND_LEN);
+    if (commnand_parser.setCommand(command_data, command_len)){
+      led2 = led2 ^ 1;
+    }
+    command_len = 0;
+    wait(0.001);
+  }
 	
+#if 0  
 	as5600 = as5600;
   t.reset();
   t.start();
@@ -93,4 +101,5 @@ int main() {
 	motor = 0;
 	motor.status_changed();
 	blink_led = 0;
+#endif
 }

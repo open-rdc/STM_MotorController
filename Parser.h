@@ -28,7 +28,7 @@ public:
   int getNextCommand(int *address, int *data);
 
 private:
-  unsigned char* command_buf;
+  unsigned char command_buf[MAX_COMMAND_LEN];
   int command_buf_len;
   int id;
   int command;

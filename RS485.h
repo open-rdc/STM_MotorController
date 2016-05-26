@@ -23,6 +23,8 @@
 
 #include "mbed.h"
 
+#define MAX_RECV_BUFFER 256
+
 class RS485
 {
 public:
@@ -45,6 +47,11 @@ private:
   Serial serial_;
 	DigitalOut select_out_;
 	void txFinishCallback(void);
+	void rxFinishCallback(void);
+
+  int rx_buf[MAX_RECV_BUFFER];
+  int p_read;
+  int p_stock;
 };
 
 #endif

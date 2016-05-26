@@ -23,22 +23,29 @@
 
 #include "mbed.h"
 
-class RS485 : public Serial
+class RS485
 {
 public:
 	RS485(PinName tx, PinName rx, PinName selectOut);
 
-	int putc(int c);
+	void baud(int baudrate);
 
-	int printf(const char* format, ...);
+  int readable();
+
+  int putc(int c);
+
+  int getc();
+
+  int printf(const char* format, ...);
 
 	virtual ssize_t write(const void* buffer, size_t length);
 	virtual ssize_t read(void* buffer, size_t length);
 
 private:
-//	Serial serial;
+  Serial serial_;
 	DigitalOut select_out_;
 	void txFinishCallback(void);
 };
 
 #endif
+

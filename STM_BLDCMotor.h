@@ -13,18 +13,11 @@
  * #include "mbed.h"
  * #include "STM_BLDCMotor.h"
  *
- * STM_BLDCMotor acmotor();
+ * STM_BLDCMotor motor;
  *
  * int main(){
- * int previous_hole_state = 6;
- *   acmotor.servoOn();
- *   acmotor = 0.1;		// duty ratio
- *   while(1){
- *	    if (acmotor.getHoleState() != previous_hole_state){
- *       acmotor.status_changed();
- *       previous_hole_state = acmotor.getHoleState();
- *		  }
- *		}
+ *   motor.servoOn();
+ *   motor = 0.1;		// duty ratio
  * }
  * @endcode
  */

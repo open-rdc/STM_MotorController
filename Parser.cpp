@@ -49,7 +49,7 @@ bool Parser::setCommand(unsigned char *command_data, int command_data_len)
 //          int len = (length - 6) / count - 1;
           address[stocked_data_len] = command_buf[length - 3];
           unsigned char *p = (unsigned char *)&command_buf[4];
-          data[stocked_data_len] = (short)(*(p+1) + *p);
+          data[stocked_data_len] = (short)((*(p+1)  << 8) + *p);
           if (stocked_data_len < MAX_STOCKED_COMMAND - 1)
             stocked_data_len ++;
           break;

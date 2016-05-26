@@ -4,10 +4,9 @@
 #include "Parser.h"
 #include "STM_BLDCMotor.h"
 
-#define MAX_ANGLE 0
-#define MIN_ANGLE -45
 #define GAIN 10.0
 #define BAUDRATE 115200
+#define OFFSET 2.3;
 
 #ifndef M_PI
 #define M_PI           3.14159265358979323846f
@@ -46,7 +45,7 @@ struct RobotStatus{
 
 void initialize()
 {
-  status.target_angle = 0;
+  status.target_angle = OFFSET;
   status.current_angle = 0;
   status.gain = GAIN;
   status.max_torque = 1.0;
@@ -65,6 +64,7 @@ int main() {
 	as5600 = as5600;
   t.reset();
   t.start();
+  motor.servoOn();
   
   while(1){
     status.led_count ++;
@@ -77,6 +77,12 @@ int main() {
     command_len = rs485.read(command_data, MAX_COMMAND_LEN);
     if (commnand_parser.setCommand(command_data, command_len)){
       led2 = led2 ^ 1;
+      int address, data;
+      if (commnand_parser.getNextCommand(&address, &data) > 0){
+        data = max(min(data, 3000), -3000);
+        status.target_angle = (float)data / 18000.0 * M_PI + OFFSET;
+        motor.status_changed();
+      }
     }
     command_len = 0;
 
@@ -84,16 +90,10 @@ int main() {
 		if (as5600.getError()) break;
 		float val = max(min(status.gain * (status.current_angle - status.target_angle),
       status.max_torque), -status.max_torque);
-		motor = (double)0.1;
+		motor = val;
     
-		if (status.change_target){
-			motor.status_changed();
-			status.change_target = false;
-		}
     wait(0.001);
   }
-  motor.servoOn();
 	motor = 0;
-	motor.status_changed();
 	blink_led = 0;
 }

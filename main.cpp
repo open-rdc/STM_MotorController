@@ -9,8 +9,8 @@
 #define GAIN 10.0
 #define PUNCH 0.15
 #define MARGIN 0.003
-#define MAX_ANGLE 30.0
-#define MIN_ANGLE -30.0
+#define MAX_ANGLE 60.0
+#define MIN_ANGLE -60.0
 #define OFFSET_ANGLE 2.3
 #define BAUDRATE 115200
 #define OFFSET 2.3;
@@ -23,7 +23,7 @@
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #define min(a, b) ((a) < (b) ? (a) : (b))
 
-Property property;
+extern Property property;
 
 DigitalOut blink_led(LED1);
 DigitalOut led2(LED2);
@@ -136,6 +136,8 @@ int main() {
 		status.current_angle = as5600;
 		if (as5600.getError()) break;
     float error = status.current_angle - status.target_angle;
+    while(error > M_PI) error -= 2.0 * M_PI;
+    while(error < -M_PI) error += 2.0 * M_PI;
     float pwm = 0;
     if (fabs(error) > status.margin){
       if (error > 0){

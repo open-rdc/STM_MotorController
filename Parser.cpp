@@ -14,7 +14,7 @@ extern DigitalOut led2;
 extern DigitalOut led3;
 extern DigitalOut led4;
 
-extern Property property;
+Property property;
 
 char property_size[sizeof(Property)];
 

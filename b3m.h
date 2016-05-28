@@ -155,7 +155,7 @@ typedef unsigned char byte;
 typedef unsigned short ushort;
 typedef unsigned long ulong;
 
-struct Property_T {
+typedef struct {
   byte ID;
   ulong Baudrate;
   short PositionMinLimit;
@@ -204,6 +204,7 @@ struct Property_T {
   ushort EncoderValue;
   long EncoderCount;
   byte HallICState;
+/*
   byte dummy4;
   byte dummy5;
   byte dummy6;
@@ -230,7 +231,7 @@ struct Property_T {
   byte StatusMotor;
   byte StatusUart;
   byte StatusCommand;
-};
-
+  */
+} Property;
 
 #endif /* B3M_H_ */

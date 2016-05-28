@@ -23,6 +23,8 @@
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #define min(a, b) ((a) < (b) ? (a) : (b))
 
+Property property;
+
 DigitalOut blink_led(LED1);
 DigitalOut led2(LED2);
 DigitalOut led3(LED3);
@@ -31,7 +33,7 @@ BusIn sw(SW1, SW2);
 STM_BLDCMotor motor;
 AS5600 as5600(I2C_SDA, I2C_SCL);
 RS485 rs485(RS485_TX, RS485_RX, RS485_SELECT);
-Parser commnand_parser(0);
+Parser commnand_parser;
 Flash flash;
 Timer t;
 
@@ -47,8 +49,8 @@ struct RobotStatus {
   float punch;
   float margin;
   float max_torque;
-  float max_angle;
-  float min_angle;
+//  float max_angle;
+//  float min_angle;
   float offset_angle;
   bool is_servo_on;
   bool change_target;
@@ -56,8 +58,6 @@ struct RobotStatus {
   int led_state;
   int led_count;
 } status;
-
-Property_T property;
 
 void initialize()
 {
@@ -67,14 +67,18 @@ void initialize()
   status.punch  = PUNCH;
   status.margin = MARGIN;
   status.max_torque = 1.0;
-  status.max_angle = MAX_ANGLE;
-  status.min_angle = MIN_ANGLE;
+//  status.max_angle = MAX_ANGLE;
+//  status.min_angle = MIN_ANGLE;
   status.offset_angle = OFFSET_ANGLE;
   status.is_servo_on = false;
   status.led_state = 0;
   status.led_count = 0;
   status.change_target = false;
   status.isWakeupMode = true;
+  
+  property.ID = 0;
+  property.PositionMinLimit = MIN_ANGLE * 100;
+  property.PositionMaxLimit = MAX_ANGLE * 100;
 }
 
 int main() {
@@ -104,14 +108,31 @@ int main() {
       led2 = led2 ^ 1;
       int address, data;
       if (commnand_parser.getNextCommand(&address, &data) > 0){
-        data = max(min(data, status.max_angle * 100), status.min_angle * 100);
-        status.target_angle = (float)data * M_PI / 18000.0  + status.offset_angle;
-        motor.status_changed();
+        switch(address){
+          case B3M_SERVO_DESIRED_POSITION:
+            data = max(min(data, property.PositionMaxLimit), property.PositionMinLimit);
+            status.target_angle = (float)data * M_PI / 18000.0  + status.offset_angle;
+            motor.status_changed();
+            break;
+          case B3M_SYSTEM_POSITION_MIN:
+            property.PositionMinLimit = data;
+            break;
+          case B3M_SYSTEM_POSITION_MAX:
+            property.PositionMaxLimit = data;
+            break;
+          case B3M_SYSTEM_ID:
+            property.ID = data;
+            break;
+        }
       }
     } else if (command == B3M_CMD_SAVE){
       flash.write(FLASH_ADDRESS, (uint8_t *)&property, sizeof(property));
+    } else if (command == B3M_CMD_RESET){      
+      initialize();
+      led2 = led3 = led4 = 1;
+      wait(1);
+      led2 = led3 = led4 = 0;
     }
-
 		status.current_angle = as5600;
 		if (as5600.getError()) break;
     float error = status.current_angle - status.target_angle;
@@ -127,7 +148,6 @@ int main() {
     }
 		float val = max(min(pwm, status.max_torque), -status.max_torque);
 		motor = val;
-    
     wait(0.001);
   }
 	motor = 0;

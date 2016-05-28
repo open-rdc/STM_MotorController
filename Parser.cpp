@@ -25,9 +25,9 @@ Parser::Parser(int id): command_buf_len(0), stocked_data_len(0)
 }
 
 // ‚Æ‚è‚ ‚¦‚¸‚ÌŽÀ‘•
-bool Parser::setCommand(unsigned char *command_data, int command_data_len)
+int Parser::setCommand(unsigned char *command_data, int command_data_len)
 {
-  bool res = false;
+  int res = 0;
   if (command_data_len <= 0) return false;
   for(int i = 0; i < command_data_len; i ++)
     command_buf[command_buf_len ++] = command_data[i];
@@ -45,6 +45,7 @@ bool Parser::setCommand(unsigned char *command_data, int command_data_len)
         command = command_buf[1];
         option = command_buf[2];
         if (command == B3M_CMD_WRITE){
+          res = B3M_CMD_WRITE;
 //          int count = command_buf[length - 2];
 //          int len = (length - 6) / count - 1;
           address[stocked_data_len] = command_buf[length - 3];
@@ -53,6 +54,8 @@ bool Parser::setCommand(unsigned char *command_data, int command_data_len)
           if (stocked_data_len < MAX_STOCKED_COMMAND - 1)
             stocked_data_len ++;
           break;
+        } else if (command == B3M_CMD_SAVE){
+          res = B3M_CMD_SAVE;
         }
       }
       break;
@@ -62,7 +65,6 @@ bool Parser::setCommand(unsigned char *command_data, int command_data_len)
       command_buf[i - length] = command_buf[i];
     }
     command_buf_len -= length;
-    res = true;
   }
   return res;
 }

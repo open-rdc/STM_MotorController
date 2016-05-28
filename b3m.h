@@ -151,4 +151,86 @@
 #define B3M_SC_READ 0
 #define B3M_SC_WRITE 1
 
+typedef unsigned char byte;
+typedef unsigned short ushort;
+typedef unsigned long ulong;
+
+struct Property_T {
+  byte ID;
+  ulong Baudrate;
+  short PositionMinLimit;
+  short PositionMaxLimit;
+  short PositionCenterOffset;
+  short MCUTempLimit;
+  byte MCUTempPowerLimit;
+  short MotorTempLimit;
+  byte MotorTempPowerLimit;
+  ushort CurrentLimit;
+  byte CurrentPowerLimit;
+  byte LockDetectTime;
+  byte LockDetectOutputRate;
+  byte LockDetectTimePowerLimit;
+  ushort InputVoltageMin;
+  ushort InputVoltageMax;
+  byte TorqueLimit;
+  ushort DeadBandWidth;
+  byte MotorCWRatio;
+  byte MotorCCWRatio;
+  byte dummy1;
+  byte dummy2;
+  byte dummy3;
+  byte ServoOption;
+  ushort ServoMode;
+  byte TorqueON;
+  byte RunMode;
+  short DesiredPosition;
+  short CurrentPosition;
+  short PreviousPosition;
+  short DesiredVelosity;
+  short CurrentVelosity;
+  short PreviousVelosity;
+  ushort DesiredTime;
+  ushort RunningTime;
+  ushort WorkingTime;
+  short DesiredTorque;
+  ulong SystemClock;
+  ushort SamplingTime;
+  short MUCTemperature;
+  short MotorTemperature;
+  short Current;
+  ushort InputVoltage;
+  ushort PwmDuty;
+  ushort PwmFrequency;
+  ushort EncoderValue;
+  long EncoderCount;
+  byte HallICState;
+  byte dummy4;
+  byte dummy5;
+  byte dummy6;
+  ushort ControlRow;
+  byte GainPresetNo;
+  byte ControlType;
+  ulong Kp0;
+  ulong Kd0;
+  ulong Ki0;
+  ushort StaticFriction0;
+  ushort DynamicFriction0;
+  ulong Kp1;
+  ulong Kd1;
+  ulong Ki1;
+  ushort StaticFriction1;
+  ushort DynamicFriction1;
+  ulong Kp2;
+  ulong Kd2;
+  ulong Ki2;
+  ushort StaticFriction2;
+  ushort DynamicFriction2;
+  ulong Status;
+  byte StatusSystem;
+  byte StatusMotor;
+  byte StatusUart;
+  byte StatusCommand;
+};
+
+
 #endif /* B3M_H_ */

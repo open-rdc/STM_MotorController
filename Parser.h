@@ -19,7 +19,7 @@ public:
     this->id = id;
   }
 
-  bool setCommand(unsigned char *command_data, int command_len);
+  int setCommand(unsigned char *command_data, int command_len);
   
   void setId(int id);
 

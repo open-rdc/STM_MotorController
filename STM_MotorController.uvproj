@@ -1550,6 +1550,11 @@
               <FileType>8</FileType>
               <FilePath>.\Parser.cpp</FilePath>
             </File>
+            <File>
+              <FileName>Flash.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\Flash.cpp</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>

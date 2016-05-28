@@ -3,6 +3,8 @@
 #include "RS485.h"
 #include "Parser.h"
 #include "STM_BLDCMotor.h"
+#include "Flash.h"
+#include "b3m.h"
 
 #define GAIN 10.0
 #define PUNCH 0.15
@@ -12,6 +14,7 @@
 #define OFFSET_ANGLE 2.3
 #define BAUDRATE 115200
 #define OFFSET 2.3;
+#define FLASH_ADDRESS 0x08010000
 
 #ifndef M_PI
 #define M_PI           3.14159265358979323846f
@@ -29,6 +32,7 @@ STM_BLDCMotor motor;
 AS5600 as5600(I2C_SDA, I2C_SCL);
 RS485 rs485(RS485_TX, RS485_RX, RS485_SELECT);
 Parser commnand_parser(0);
+Flash flash;
 Timer t;
 
 const int MAX_COMMAND_LEN = 256; 
@@ -36,7 +40,7 @@ unsigned char command_data[MAX_COMMAND_LEN];
 int command_len = 0;
 const int LED_COUNT_MAX = 500;
 
-struct RobotStatus{
+struct RobotStatus {
   float target_angle;
   float current_angle;
   float gain;
@@ -52,6 +56,8 @@ struct RobotStatus{
   int led_state;
   int led_count;
 } status;
+
+Property_T property;
 
 void initialize()
 {
@@ -80,6 +86,7 @@ int main() {
   t.reset();
   t.start();
   motor.servoOn();
+  memcpy(&property, (void *)FLASH_ADDRESS, sizeof(property));
   
   while(1){
     status.led_count ++;
@@ -90,7 +97,10 @@ int main() {
     }
 
     command_len = rs485.read(command_data, MAX_COMMAND_LEN);
-    if (commnand_parser.setCommand(command_data, command_len)){
+    int command = commnand_parser.setCommand(command_data, command_len);
+    command_len = 0;
+    
+    if (command == B3M_CMD_WRITE){
       led2 = led2 ^ 1;
       int address, data;
       if (commnand_parser.getNextCommand(&address, &data) > 0){
@@ -98,8 +108,9 @@ int main() {
         status.target_angle = (float)data * M_PI / 18000.0  + status.offset_angle;
         motor.status_changed();
       }
+    } else if (command == B3M_CMD_SAVE){
+      flash.write(FLASH_ADDRESS, (uint8_t *)&property, sizeof(property));
     }
-    command_len = 0;
 
 		status.current_angle = as5600;
 		if (as5600.getError()) break;

@@ -5,6 +5,8 @@
 
 #include "mbed.h"
 
+#define MAX_REPLY 32
+
 /** Commnad Parser
  */
 
@@ -17,9 +19,12 @@ public:
 
   int setCommand(unsigned char *command_data, int command_len);
   
+  int getReply(unsigned char *data);
+
   void setId(int id);
 
   int getNextCommand(int *address, int *data);
+
 
 private:
   unsigned char command_buf[MAX_COMMAND_LEN];
@@ -29,6 +34,8 @@ private:
   int address[MAX_STOCKED_COMMAND];
   int data[MAX_STOCKED_COMMAND];
   int stocked_data_len;
+  unsigned char reply[MAX_REPLY];
+  int reply_byte;
 };
 
 #endif

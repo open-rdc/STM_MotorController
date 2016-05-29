@@ -148,8 +148,17 @@ int main() {
         pwm = status.gain * error - status.punch;
       }
     }
+    
 		float val = max(min(pwm, status.max_torque), -status.max_torque);
 		motor = val;
+    {
+      unsigned char buf[32];
+      int len = commnand_parser.getReply(buf);
+      if (len > 0){
+        wait_us(30);
+//        for(int i = 0; i < len; i ++) rs485.putc(buf[i]);
+      }
+    }
     wait(0.001);
   }
 	motor = 0;

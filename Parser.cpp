@@ -7,13 +7,6 @@
 #include "b3m.h"
 #include "Parser.h"
 
-#include "mbed.h"
-#include "RS485.h"
-extern RS485 rs485;
-extern DigitalOut led2;
-extern DigitalOut led3;
-extern DigitalOut led4;
-
 Property property;
 
 char property_size[sizeof(Property)];
@@ -21,7 +14,7 @@ char property_size[sizeof(Property)];
 /*!
  * @brief constructor
  */ 
-Parser::Parser(): command_buf_len(0), stocked_data_len(0)
+Parser::Parser(): command_buf_len(0), stocked_data_len(0), reply_byte(0)
 {
   for(int i = 0; i < sizeof(Property); i ++)
     property_size[i] = sizeof(short);
@@ -60,10 +53,17 @@ int Parser::setCommand(unsigned char *command_data, int command_data_len)
           data[stocked_data_len] = (short)((*(p+1)  << 8) + *p);
         if (stocked_data_len < MAX_STOCKED_COMMAND - 1)
           stocked_data_len ++;
-        break;
+        reply_byte = 5;
+        reply[0] = 5, reply[1] = 0x84, reply[2] = 0, reply[3] = property.ID;
+        reply[4] = 0;
+        for(int i = 0; i < 4; i ++) reply[4] += reply[i];
       } else if (command == B3M_CMD_SAVE){
         if (command_buf[3] != property.ID) break;
         res = B3M_CMD_SAVE;
+        reply_byte = 5;
+        reply[0] = 5, reply[1] = 0x82, reply[2] = 0, reply[3] = property.ID;
+        reply[4] = 0;
+        for(int i = 0; i < 4; i ++) reply[4] += reply[i];
       } else if (command == B3M_CMD_RESET){
         res = B3M_CMD_RESET;
       }
@@ -91,4 +91,11 @@ int Parser::getNextCommand(int *address, int *data)
     stocked_data_len --;
   }
   return res;
+}
+
+int Parser::getReply(unsigned char *data){
+  int ret = reply_byte;
+  for(int i = 0; i < reply_byte; i ++) data[i] = reply[i];
+  reply_byte = 0;
+  return ret;
 }

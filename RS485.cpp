@@ -29,6 +29,7 @@ int RS485::putc(int c)
 
 int RS485::getc()
 {
+	select_out_ = 0;
 	return serial_.getc();
 }
 
@@ -52,7 +53,7 @@ ssize_t RS485::write(const void* buffer, size_t length)
 {
 	char *buf = (char *)buffer;
 	for(int i = 0; i < length; i ++){
-		serial_.putc(*buf++);
+		serial_.putc((int)*buf++);
 	}
 	
 	return length;
@@ -60,7 +61,7 @@ ssize_t RS485::write(const void* buffer, size_t length)
 
 ssize_t RS485::read(void* buffer, size_t length)
 {
-	unsigned char *buf = (unsigned char *)buffer;
+ 	unsigned char *buf = (unsigned char *)buffer;
   int len = p_stock - p_read;
   if (len < 0) len += MAX_RECV_BUFFER;
   if (len > length) len = length;

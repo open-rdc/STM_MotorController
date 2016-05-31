@@ -25,7 +25,7 @@ Parser::Parser(): command_buf_len(0), stocked_data_len(0), reply_byte(0)
 int Parser::setCommand(unsigned char *command_data, int command_data_len)
 {
   int res = 0;
-  if (command_data_len <= 0) return false;
+  if (command_data_len <= 0) return res;
   for(int i = 0; i < command_data_len; i ++)
     command_buf[command_buf_len ++] = command_data[i];
   int length = command_buf[0];

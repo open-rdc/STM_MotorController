@@ -77,9 +77,12 @@ void initialize()
   status.change_target = false;
   status.isWakeupMode = true;
   
+  memset((void *)&property, 0, sizeof(property));
   property.ID = 0;
+  property.Baudrate = -1;
   property.PositionMinLimit = MIN_ANGLE * 100;
   property.PositionMaxLimit = MAX_ANGLE * 100;
+  property.PositionCenterOffset = 0xaaaa;
 }
 
 int main() {
@@ -91,7 +94,7 @@ int main() {
   t.reset();
   t.start();
   motor.servoOn();
-  memcpy(&property, (void *)FLASH_ADDRESS, sizeof(property));
+  memcpy((void *)&property, (void *)FLASH_ADDRESS, sizeof(property));
   
   while(1){
     status.led_count ++;
@@ -130,6 +133,9 @@ int main() {
           break;
         case B3M_SYSTEM_POSITION_MAX:
           property.PositionMaxLimit = data;
+          break;
+        case B3M_SYSTEM_POSITION_CENTER:
+          property.PositionCenterOffset = data;
           break;
         case B3M_SYSTEM_ID:
           property.ID = data;

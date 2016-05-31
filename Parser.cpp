@@ -7,7 +7,7 @@
 #include "b3m.h"
 #include "Parser.h"
 
-Property property;
+volatile Property property;
 
 char property_size[sizeof(Property)];
 
@@ -21,7 +21,6 @@ Parser::Parser(): command_buf_len(0), stocked_data_len(0), reply_byte(0)
   property_size[B3M_SYSTEM_ID] = sizeof(char);
 }
 
-// ‚Æ‚è‚ ‚¦‚¸‚ÌŽÀ‘•
 int Parser::setCommand(unsigned char *command_data, int command_data_len)
 {
   int res = 0;
@@ -63,6 +62,17 @@ int Parser::setCommand(unsigned char *command_data, int command_data_len)
         reply[0] = 5, reply[1] = 0x84, reply[2] = 0, reply[3] = property.ID;
         reply[4] = 0;
         for(int i = 0; i < 4; i ++) reply[4] += reply[i];
+      } else if (command == B3M_CMD_READ){
+        if (command_buf[3] != property.ID) break;
+        res = B3M_CMD_READ;
+        int data_byte = command_buf[length - 2];
+        int add = command_buf[length - 3];
+        reply_byte = data_byte+5;
+        reply[0] = reply_byte, reply[1] = 0x83, reply[2] = 0, reply[3] = property.ID;
+        unsigned char *p = (unsigned char *)&property;
+        for(int i = 0; i < data_byte; i ++) reply[i + 4] = p[add + i];
+        reply[reply_byte - 1]  = 0;
+        for(int i = 0; i < (reply_byte - 1); i ++) reply[reply_byte - 1] += reply[i];
       } else if (command == B3M_CMD_SAVE){
         if (command_buf[3] != property.ID) break;
         res = B3M_CMD_SAVE;

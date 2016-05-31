@@ -41,6 +41,7 @@ const int MAX_COMMAND_LEN = 256;
 unsigned char command_data[MAX_COMMAND_LEN];
 int command_len = 0;
 const int LED_COUNT_MAX = 500;
+unsigned char send_buf[32];
 
 struct RobotStatus {
   float target_angle;
@@ -155,11 +156,10 @@ int main() {
 		float val = max(min(pwm, status.max_torque), -status.max_torque);
 		motor = val;
     {
-      unsigned char buf[32];
-      int len = commnand_parser.getReply(buf);
+      int len = commnand_parser.getReply(send_buf);
       if (len > 0){
         wait_us(30);
-//        for(int i = 0; i < len; i ++) rs485.putc(buf[i]);
+        for(int i = 0; i < len; i ++) rs485.putc(send_buf[i]);
       }
     }
     wait(0.001);

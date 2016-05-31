@@ -106,25 +106,6 @@ int main() {
     
     if (command == B3M_CMD_WRITE){
       led2 = led2 ^ 1;
-      int address, data;
-      if (commnand_parser.getNextCommand(&address, &data) > 0){
-        switch(address){
-          case B3M_SERVO_DESIRED_POSITION:
-            data = max(min(data, property.PositionMaxLimit), property.PositionMinLimit);
-            status.target_angle = (float)data * M_PI / 18000.0  + status.offset_angle;
-            motor.status_changed();
-            break;
-          case B3M_SYSTEM_POSITION_MIN:
-            property.PositionMinLimit = data;
-            break;
-          case B3M_SYSTEM_POSITION_MAX:
-            property.PositionMaxLimit = data;
-            break;
-          case B3M_SYSTEM_ID:
-            property.ID = data;
-            break;
-        }
-      }
     } else if (command == B3M_CMD_SAVE){
       flash.write(FLASH_ADDRESS, (uint8_t *)&property, sizeof(property));
     } else if (command == B3M_CMD_RESET){      
@@ -133,6 +114,28 @@ int main() {
       wait(1);
       led2 = led3 = led4 = 0;
     }
+    
+    int address, data;
+    int com_num = commnand_parser.getNextCommand(&address, &data);
+    if (com_num > 0){
+      switch(address){
+        case B3M_SERVO_DESIRED_POSITION:
+          data = max(min(data, property.PositionMaxLimit), property.PositionMinLimit);
+          status.target_angle = (float)data * M_PI / 18000.0  + status.offset_angle;
+          motor.status_changed();
+          break;
+        case B3M_SYSTEM_POSITION_MIN:
+          property.PositionMinLimit = data;
+          break;
+        case B3M_SYSTEM_POSITION_MAX:
+          property.PositionMaxLimit = data;
+          break;
+        case B3M_SYSTEM_ID:
+          property.ID = data;
+          break;
+      }
+    }
+
 		status.current_angle = as5600;
 		if (as5600.getError()) break;
     float error = status.current_angle - status.target_angle;

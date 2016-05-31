@@ -42,17 +42,22 @@ int Parser::setCommand(unsigned char *command_data, int command_data_len)
       if (command == B3M_CMD_WRITE){
         if (command_buf[3] != property.ID) break;
         res = B3M_CMD_WRITE;
-//          int count = command_buf[length - 2];
-//          int len = (length - 6) / count - 1;
+        int count = command_buf[length - 2];
+        int len = (length - 6) / count - 1;
         int add = command_buf[length - 3];
-        address[stocked_data_len] = add;
         unsigned char *p = (unsigned char *)&command_buf[4];
-        if (property_size[add] == sizeof(char))
-          data[stocked_data_len] = (short)*p;
-        if (property_size[add] == sizeof(short))
-          data[stocked_data_len] = (short)((*(p+1)  << 8) + *p);
-        if (stocked_data_len < MAX_STOCKED_COMMAND - 1)
-          stocked_data_len ++;
+        for(int j = 0; j < len;){
+          address_[stocked_data_len] = add + j;
+          if (property_size[add + j] == sizeof(char)){
+            data_[stocked_data_len] = (short)p[j];
+            j ++;
+          } else if (property_size[add + j] == sizeof(short)){
+            data_[stocked_data_len] = (short)((unsigned short)(p[j+1] << 8) + (unsigned short)p[j]);
+            j += 2;
+          }
+          if (stocked_data_len < (MAX_STOCKED_COMMAND - 1))
+            stocked_data_len ++;
+        }
         reply_byte = 5;
         reply[0] = 5, reply[1] = 0x84, reply[2] = 0, reply[3] = property.ID;
         reply[4] = 0;
@@ -82,11 +87,11 @@ int Parser::getNextCommand(int *address, int *data)
 {
   int res = stocked_data_len;
   if (stocked_data_len > 0){
-    *address = this->address[0];
-    *data = this->data[0];
-    for(int i = stocked_data_len - 1; i > 0; i --){
-      address[i - 1] = address[i];
-      data[i - 1] = data[i];
+    *address = address_[0];
+    *data = data_[0];
+    for(int i = 1; i < stocked_data_len; i ++){
+      address_[i - 1] = address_[i];
+      data_[i - 1] = data_[i];
     }
     stocked_data_len --;
   }

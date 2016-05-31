@@ -31,8 +31,8 @@ private:
   int command_buf_len;
   int command;
   int option;
-  int address[MAX_STOCKED_COMMAND];
-  int data[MAX_STOCKED_COMMAND];
+  int address_[MAX_STOCKED_COMMAND];
+  int data_[MAX_STOCKED_COMMAND];
   int stocked_data_len;
   unsigned char reply[MAX_REPLY];
   int reply_byte;

@@ -45,12 +45,6 @@ unsigned char send_buf[256];
 
 struct RobotStatus {
   float target_angle;
-  float current_angle;
-  float gain;
-  float gain_i;
-  float punch;
-  float margin;
-  float max_torque;
   bool is_servo_on;
   bool change_target;
   bool isWakeupMode;
@@ -74,12 +68,6 @@ float rad2deg100(float rad){
 void initialize()
 {
   status.target_angle = as5600;
-  status.current_angle = 0;
-  status.gain = GAIN;
-  status.gain_i = 0;
-  status.punch  = PUNCH;
-  status.margin = deg2rad(DEAD_BAND_WIDTH);
-  status.max_torque = 1.0;
   status.is_servo_on = false;
   status.led_state = 0;
   status.led_count = 0;
@@ -93,11 +81,11 @@ void initialize()
   property.PositionMinLimit = MIN_ANGLE * 100;
   property.PositionMaxLimit = MAX_ANGLE * 100;
   property.PositionCenterOffset = rad2deg100(status.target_angle);
-  property.TorqueLimit = status.max_torque * 100;
+  property.TorqueLimit = 100;
   property.DeadBandWidth = DEAD_BAND_WIDTH * 100;
-  property.Kp0 = status.gain * 100;
+  property.Kp0 = GAIN * 100;
   property.Ki0 = 0;
-  property.StaticFriction0 = status.punch *100;
+  property.StaticFriction0 = PUNCH *100;
 }
 
 int main() {
@@ -154,10 +142,9 @@ int main() {
           break;
         case B3M_SYSTEM_DEADBAND_WIDTH:
           property.DeadBandWidth = data;
-          status.margin = deg100_2rad(data);
           break;
-        case B3M_SYSTEM_TORQUE_LIMIT:          
-          status.max_torque = (float)property.TorqueLimit / 100.0f;
+        case B3M_SYSTEM_TORQUE_LIMIT:
+          property.TorqueLimit = data;
           break;
         case B3M_SERVO_DESIRED_POSITION:
           data = max(min(data, property.PositionMaxLimit), property.PositionMinLimit);
@@ -166,41 +153,42 @@ int main() {
           break;
         case B3M_CONTROL_KP0:
           property.Kp0 = data;
-          status.gain = property.Kp0 / 100.0f;
           break;
         case B3M_CONTROL_KI0:
           property.Ki0 = data;
-          status.gain_i = property.Ki0 / 100.0f;
           status.err_i = 0;
           break;
         case B3M_CONTROL_STATIC_FRICTION0:
           property.StaticFriction0 = data;
-          status.punch = property.StaticFriction0 / 100.0f;
           break;
       }
     }
 
-		status.current_angle = as5600;
-    property.CurrentPosition = rad2deg100(status.current_angle);
+    property.CurrentPosition = rad2deg100(as5600);
 		if (as5600.getError()) break;
-    float error = status.current_angle - status.target_angle;
+    float error = deg100_2rad(property.CurrentPosition) - status.target_angle;
     while(error > M_PI) error -= 2.0 * M_PI;
     while(error < -M_PI) error += 2.0 * M_PI;
     status.err_i += error * 0.001f;
     status.err_i = max(min(status.err_i, 1.0f), -1.0f); 
 
-    float pwm = status.gain_i * status.err_i;
-    if (fabs(error) > status.margin){
+    float gain = property.Kp0 / 100.0f;
+    float gain_i = property.Ki0 / 100.0f;
+    float punch = property.StaticFriction0 / 100.0f;
+    float pwm = gain_i * status.err_i;
+    float margin = deg100_2rad(property.DeadBandWidth);
+    if (fabs(error) > margin){
       if (error > 0){
-        error -= status.margin;
-        pwm += status.gain * error + status.punch;
+        error -= margin;
+        pwm += gain * error + punch;
       } else {
-        error += status.margin;
-        pwm += status.gain * error - status.punch;
+        error += margin;
+        pwm += gain * error - punch;
       }
     }
     
-		float val = max(min(pwm, status.max_torque), -status.max_torque);
+    float max_torque = property.TorqueLimit / 100.0f;
+		float val = max(min(pwm, max_torque), -max_torque);
 //    int angle = property.CurrentPosition - property.PositionCenterOffset;
 //    if ((angle > property.PositionMaxLimit)&&(val < 0)) val = 0;
 //    if ((angle < property.PositionMinLimit)&&(val > 0)) val = 0;

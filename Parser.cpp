@@ -19,6 +19,16 @@ Parser::Parser(): command_buf_len(0), stocked_data_len(0), reply_byte(0)
   for(int i = 0; i < sizeof(Property); i ++)
     property_size[i] = sizeof(short);
   property_size[B3M_SYSTEM_ID] = sizeof(char);
+  property_size[B3M_SYSTEM_BAUDRATE] = sizeof(long);
+  property_size[B3M_SYSTEM_MCU_TEMP_LIMIT_PR] = sizeof(char);
+  property_size[B3M_SYSTEM_CURRENT_LIMIT_PR] = sizeof(char);
+  property_size[B3M_SYSTEM_LOCKDETECT_TIME] = sizeof(char);
+  property_size[B3M_SYSTEM_LOCKDETECT_OUTRATE] = sizeof(char);
+  property_size[B3M_SYSTEM_LOCKDETECT_TIME_PR] = sizeof(char);
+  property_size[B3M_SYSTEM_TORQUE_LIMIT] = sizeof(char);  
+  property_size[B3M_CONTROL_KP0] = sizeof(long);
+  property_size[B3M_CONTROL_KD0] = sizeof(long);
+  property_size[B3M_CONTROL_KI0] = sizeof(long);
 }
 
 int Parser::setCommand(unsigned char *command_data, int command_data_len)
@@ -54,6 +64,10 @@ int Parser::setCommand(unsigned char *command_data, int command_data_len)
           } else if (property_size[add + j] == sizeof(short)){
             data_[stocked_data_len] = (short)((unsigned short)(p[j+1] << 8) + (unsigned short)p[j]);
             j += 2;
+          } else if (property_size[add + j] == sizeof(long)){
+            data_[stocked_data_len] = (short)((unsigned short)(p[j+3] << 24)+
+              (unsigned short)(p[j+2] << 16) + (unsigned short)(p[j+1] << 8) + (unsigned short)p[j]);
+            j += 4;
           }
           if (stocked_data_len < (MAX_STOCKED_COMMAND - 1))
             stocked_data_len ++;
@@ -78,6 +92,13 @@ int Parser::setCommand(unsigned char *command_data, int command_data_len)
         res = B3M_CMD_SAVE;
         reply_byte = 5;
         reply[0] = 5, reply[1] = 0x82, reply[2] = 0, reply[3] = property.ID;
+        reply[4] = 0;
+        for(int i = 0; i < 4; i ++) reply[4] += reply[i];
+      } else if (command == B3M_CMD_LOAD){
+        if (command_buf[3] != property.ID) break;
+        res = B3M_CMD_LOAD;
+        reply_byte = 5;
+        reply[0] = 5, reply[1] = 0x81, reply[2] = 0, reply[3] = property.ID;
         reply[4] = 0;
         for(int i = 0; i < 4; i ++) reply[4] += reply[i];
       } else if (command == B3M_CMD_RESET){

@@ -47,15 +47,16 @@ struct RobotStatus {
   float target_angle;
   float current_angle;
   float gain;
+  float gain_i;
   float punch;
   float margin;
   float max_torque;
-  float offset_angle;
   bool is_servo_on;
   bool change_target;
   bool isWakeupMode;
   int led_state;
   int led_count;
+  float err_i;
 } status;
 
 float deg100_2rad(float deg){
@@ -72,10 +73,10 @@ float rad2deg100(float rad){
 
 void initialize()
 {
-  status.target_angle =
-  status.offset_angle = as5600;
+  status.target_angle = as5600;
   status.current_angle = 0;
   status.gain = GAIN;
+  status.gain_i = 0;
   status.punch  = PUNCH;
   status.margin = deg2rad(DEAD_BAND_WIDTH);
   status.max_torque = 1.0;
@@ -84,14 +85,19 @@ void initialize()
   status.led_count = 0;
   status.change_target = false;
   status.isWakeupMode = true;
+  status.err_i = 0.0;
   
   memset((void *)&property, 0, sizeof(property));
   property.ID = 0;
   property.Baudrate = 115200;
   property.PositionMinLimit = MIN_ANGLE * 100;
   property.PositionMaxLimit = MAX_ANGLE * 100;
-  property.PositionCenterOffset = status.offset_angle * 18000.0 / M_PI;
+  property.PositionCenterOffset = rad2deg100(status.target_angle);
+  property.TorqueLimit = status.max_torque * 100;
   property.DeadBandWidth = DEAD_BAND_WIDTH * 100;
+  property.Kp0 = status.gain * 100;
+  property.Ki0 = 0;
+  property.StaticFriction0 = status.punch *100;
 }
 
 int main() {
@@ -121,6 +127,8 @@ int main() {
       led2 = led2 ^ 1;
     } else if (command == B3M_CMD_SAVE){
       flash.write(FLASH_ADDRESS, (uint8_t *)&property, sizeof(property));
+    } else if (command == B3M_CMD_LOAD){
+      memcpy((void *)&property, (void *)FLASH_ADDRESS, sizeof(property));
     } else if (command == B3M_CMD_RESET){      
       initialize();
       led2 = led3 = led4 = 1;
@@ -132,10 +140,8 @@ int main() {
     int com_num = commnand_parser.getNextCommand(&address, &data);
     if (com_num > 0){
       switch(address){
-        case B3M_SERVO_DESIRED_POSITION:
-          data = max(min(data, property.PositionMaxLimit), property.PositionMinLimit);
-          status.target_angle = (float)data * M_PI / 18000.0  + status.offset_angle;
-          motor.status_changed();
+        case B3M_SYSTEM_ID:
+          property.ID = data;
           break;
         case B3M_SYSTEM_POSITION_MIN:
           property.PositionMinLimit = data;
@@ -146,30 +152,59 @@ int main() {
         case B3M_SYSTEM_POSITION_CENTER:
           property.PositionCenterOffset = data;
           break;
-        case B3M_SYSTEM_ID:
-          property.ID = data;
+        case B3M_SYSTEM_DEADBAND_WIDTH:
+          property.DeadBandWidth = data;
+          status.margin = deg100_2rad(data);
+          break;
+        case B3M_SYSTEM_TORQUE_LIMIT:          
+          status.max_torque = (float)property.TorqueLimit / 100.0f;
+          break;
+        case B3M_SERVO_DESIRED_POSITION:
+          data = max(min(data, property.PositionMaxLimit), property.PositionMinLimit);
+          status.target_angle = deg100_2rad(data)  + deg100_2rad(property.PositionCenterOffset);
+          motor.status_changed();
+          break;
+        case B3M_CONTROL_KP0:
+          property.Kp0 = data;
+          status.gain = property.Kp0 / 100.0f;
+          break;
+        case B3M_CONTROL_KI0:
+          property.Ki0 = data;
+          status.gain_i = property.Ki0 / 100.0f;
+          status.err_i = 0;
+          break;
+        case B3M_CONTROL_STATIC_FRICTION0:
+          property.StaticFriction0 = data;
+          status.punch = property.StaticFriction0 / 100.0f;
           break;
       }
     }
 
 		status.current_angle = as5600;
-    property.CurrentPosition = status.current_angle * 18000.0 / M_PI;
+    property.CurrentPosition = rad2deg100(status.current_angle);
 		if (as5600.getError()) break;
     float error = status.current_angle - status.target_angle;
     while(error > M_PI) error -= 2.0 * M_PI;
     while(error < -M_PI) error += 2.0 * M_PI;
-    float pwm = 0;
+    status.err_i += error * 0.001f;
+    status.err_i = max(min(status.err_i, 1.0f), -1.0f); 
+
+    float pwm = status.gain_i * status.err_i;
     if (fabs(error) > status.margin){
       if (error > 0){
         error -= status.margin;
-        pwm = status.gain * error + status.punch;
+        pwm += status.gain * error + status.punch;
       } else {
         error += status.margin;
-        pwm = status.gain * error - status.punch;
+        pwm += status.gain * error - status.punch;
       }
     }
     
 		float val = max(min(pwm, status.max_torque), -status.max_torque);
+//    int angle = property.CurrentPosition - property.PositionCenterOffset;
+//    if ((angle > property.PositionMaxLimit)&&(val < 0)) val = 0;
+//    if ((angle < property.PositionMinLimit)&&(val > 0)) val = 0;
+    
 		motor = val;
     {
       int len = commnand_parser.getReply(send_buf);

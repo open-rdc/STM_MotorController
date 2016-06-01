@@ -8,7 +8,7 @@
 
 #define GAIN 10.0
 #define PUNCH 0.15
-#define MARGIN 0.003
+#define DEAD_BAND_WIDTH 0.2
 #define MAX_ANGLE 60.0
 #define MIN_ANGLE -60.0
 #define OFFSET_ANGLE 2.3
@@ -41,7 +41,7 @@ const int MAX_COMMAND_LEN = 256;
 unsigned char command_data[MAX_COMMAND_LEN];
 int command_len = 0;
 const int LED_COUNT_MAX = 500;
-unsigned char send_buf[32];
+unsigned char send_buf[256];
 
 struct RobotStatus {
   float target_angle;
@@ -50,8 +50,6 @@ struct RobotStatus {
   float punch;
   float margin;
   float max_torque;
-//  float max_angle;
-//  float min_angle;
   float offset_angle;
   bool is_servo_on;
   bool change_target;
@@ -60,17 +58,27 @@ struct RobotStatus {
   int led_count;
 } status;
 
+float deg100_2rad(float deg){
+  return deg * M_PI / 18000.0;
+}
+
+float deg2rad(float deg){
+  return deg * M_PI / 180.0;
+}
+
+float rad2deg100(float rad){
+  return rad * 18000.0 / M_PI;
+}
+
 void initialize()
 {
-  status.target_angle = OFFSET;
+  status.target_angle =
+  status.offset_angle = as5600;
   status.current_angle = 0;
   status.gain = GAIN;
   status.punch  = PUNCH;
-  status.margin = MARGIN;
+  status.margin = deg2rad(DEAD_BAND_WIDTH);
   status.max_torque = 1.0;
-//  status.max_angle = MAX_ANGLE;
-//  status.min_angle = MIN_ANGLE;
-  status.offset_angle = OFFSET_ANGLE;
   status.is_servo_on = false;
   status.led_state = 0;
   status.led_count = 0;
@@ -79,10 +87,11 @@ void initialize()
   
   memset((void *)&property, 0, sizeof(property));
   property.ID = 0;
-  property.Baudrate = -1;
+  property.Baudrate = 115200;
   property.PositionMinLimit = MIN_ANGLE * 100;
   property.PositionMaxLimit = MAX_ANGLE * 100;
-  property.PositionCenterOffset = 0xaaaa;
+  property.PositionCenterOffset = status.offset_angle * 18000.0 / M_PI;
+  property.DeadBandWidth = DEAD_BAND_WIDTH * 100;
 }
 
 int main() {
@@ -144,6 +153,7 @@ int main() {
     }
 
 		status.current_angle = as5600;
+    property.CurrentPosition = status.current_angle * 18000.0 / M_PI;
 		if (as5600.getError()) break;
     float error = status.current_angle - status.target_angle;
     while(error > M_PI) error -= 2.0 * M_PI;

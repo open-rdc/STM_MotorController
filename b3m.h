@@ -151,6 +151,9 @@
 #define B3M_SC_READ 0
 #define B3M_SC_WRITE 1
 
+#pragma push
+#pragma pack(1)
+
 typedef unsigned char byte;
 typedef unsigned short ushort;
 typedef unsigned long ulong;
@@ -174,14 +177,16 @@ typedef struct {
   ushort InputVoltageMax;
   byte TorqueLimit;
   ushort DeadBandWidth;
+  short dummy1;
+  short dummy2;
   byte MotorCWRatio;
   byte MotorCCWRatio;
-  byte dummy1;
-  byte dummy2;
   byte dummy3;
+  byte dummy4;
+  byte dummy5;
+  
   byte ServoOption;
-  ushort ServoMode;
-  byte TorqueON;
+  byte ServoMode;
   byte RunMode;
   short DesiredPosition;
   short CurrentPosition;
@@ -204,11 +209,12 @@ typedef struct {
   ushort EncoderValue;
   long EncoderCount;
   byte HallICState;
-/*
-  byte dummy4;
-  byte dummy5;
   byte dummy6;
-  ushort ControlRow;
+  byte dummy7;
+  byte dummy8;
+  byte dummy9;
+  byte dummy10;
+
   byte GainPresetNo;
   byte ControlType;
   ulong Kp0;
@@ -226,12 +232,16 @@ typedef struct {
   ulong Ki2;
   ushort StaticFriction2;
   ushort DynamicFriction2;
-  ulong Status;
+  byte dymmy11[16];
+  
+  byte StatusError;
   byte StatusSystem;
   byte StatusMotor;
   byte StatusUart;
   byte StatusCommand;
-  */
+
 } Property;
+
+#pragma pop
 
 #endif /* B3M_H_ */

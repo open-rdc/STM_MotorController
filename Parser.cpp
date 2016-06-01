@@ -7,7 +7,7 @@
 #include "b3m.h"
 #include "Parser.h"
 
-volatile Property property;
+Property property;
 
 char property_size[sizeof(Property)];
 

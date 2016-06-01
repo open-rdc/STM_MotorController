@@ -5,7 +5,7 @@
 
 #include "mbed.h"
 
-#define MAX_REPLY 32
+#define MAX_REPLY 256
 
 /** Commnad Parser
  */

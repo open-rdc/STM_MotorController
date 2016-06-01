@@ -7,7 +7,8 @@
 #include "b3m.h"
 
 #define GAIN 10.0
-#define PUNCH 0.15
+#define GAIN_I 1.0
+#define PUNCH 0.20
 #define DEAD_BAND_WIDTH 0.2
 #define MAX_ANGLE 60.0
 #define MIN_ANGLE -60.0
@@ -22,6 +23,8 @@
 
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #define min(a, b) ((a) < (b) ? (a) : (b))
+
+//#define USE_WAKEUP_MODE
 
 extern Property property;
 
@@ -68,11 +71,11 @@ float rad2deg100(float rad){
 void initialize()
 {
   status.target_angle = as5600;
-  status.is_servo_on = false;
+  status.is_servo_on = true;
   status.led_state = 0;
   status.led_count = 0;
   status.change_target = false;
-  status.isWakeupMode = true;
+  status.isWakeupMode = false;
   status.err_i = 0.0;
   
   memset((void *)&property, 0, sizeof(property));
@@ -84,7 +87,7 @@ void initialize()
   property.TorqueLimit = 100;
   property.DeadBandWidth = DEAD_BAND_WIDTH * 100;
   property.Kp0 = GAIN * 100;
-  property.Ki0 = 0;
+  property.Ki0 = GAIN_I * 100;
   property.StaticFriction0 = PUNCH *100;
 }
 
@@ -95,7 +98,6 @@ int main() {
   rs485.baud(BAUDRATE);
 	as5600 = as5600;
   t.reset();
-  t.start();
   motor.servoOn();
   memcpy((void *)&property, (void *)FLASH_ADDRESS, sizeof(property));
   
@@ -105,8 +107,10 @@ int main() {
       status.led_state ^= 1;
       blink_led = status.led_state;
       status.led_count = 0;
-    }
-
+    } 
+#ifdef USE_WAKEUP_MODE
+    status.isWakeupMode = (t.read() < 5) ? true : false;
+#endif
     command_len = rs485.read(command_data, MAX_COMMAND_LEN);
     int command = commnand_parser.setCommand(command_data, command_len);
     command_len = 0;
@@ -161,6 +165,13 @@ int main() {
         case B3M_CONTROL_STATIC_FRICTION0:
           property.StaticFriction0 = data;
           break;
+        case B3M_SERVO_SERVO_MODE:
+          t.reset();
+          status.is_servo_on = (data == 0) ? true : false;
+          status.target_angle = as5600;
+          property.DesiredPosition = rad2deg100(status.target_angle);
+          if (status.is_servo_on) t.start();
+          break;
       }
     }
 
@@ -188,12 +199,11 @@ int main() {
     }
     
     float max_torque = property.TorqueLimit / 100.0f;
-		float val = max(min(pwm, max_torque), -max_torque);
-//    int angle = property.CurrentPosition - property.PositionCenterOffset;
-//    if ((angle > property.PositionMaxLimit)&&(val < 0)) val = 0;
-//    if ((angle < property.PositionMinLimit)&&(val > 0)) val = 0;
+    float val = max(min(pwm, max_torque), -max_torque);
+    if (status.isWakeupMode) val *= 0.3;
     
-		motor = val;
+		if (status.is_servo_on) motor = val;
+    else motor = 0;
     {
       int len = commnand_parser.getReply(send_buf);
       if (len > 0){

@@ -24,7 +24,7 @@
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #define min(a, b) ((a) < (b) ? (a) : (b))
 
-//#define USE_WAKEUP_MODE
+#define USE_WAKEUP_MODE
 
 extern Property property;
 
@@ -71,7 +71,7 @@ float rad2deg100(float rad){
 void initialize()
 {
   status.target_angle = as5600;
-  status.is_servo_on = true;
+  status.is_servo_on = false;
   status.led_state = 0;
   status.led_count = 0;
   status.change_target = false;
@@ -93,6 +93,7 @@ void initialize()
 
 int main() {
 	initialize();
+  bool is_status_changed = false;
 	blink_led = 0;
 	sw.mode(PullUp);
   rs485.baud(BAUDRATE);
@@ -153,7 +154,7 @@ int main() {
         case B3M_SERVO_DESIRED_POSITION:
           data = max(min(data, property.PositionMaxLimit), property.PositionMinLimit);
           status.target_angle = deg100_2rad(data)  + deg100_2rad(property.PositionCenterOffset);
-          motor.status_changed();
+          is_status_changed = true;
           break;
         case B3M_CONTROL_KP0:
           property.Kp0 = data;
@@ -168,6 +169,7 @@ int main() {
         case B3M_SERVO_SERVO_MODE:
           t.reset();
           status.is_servo_on = (data == 0) ? true : false;
+          led3 = (status.is_servo_on) ? 1 : 0;
           status.target_angle = as5600;
           property.DesiredPosition = rad2deg100(status.target_angle);
           if (status.is_servo_on) t.start();
@@ -211,8 +213,17 @@ int main() {
         for(int i = 0; i < len; i ++) rs485.putc(send_buf[i]);
       }
     }
+    if (is_status_changed){
+      motor.status_changed();
+      is_status_changed = false;
+    }
     wait(0.001);
   }
 	motor = 0;
-	blink_led = 0;
+  while(1){
+      blink_led = led2 = led3 = led4 = 1;
+      wait(0.2);
+      blink_led = led2 = led3 = led4 = 0;
+      wait(0.2);
+  }
 }

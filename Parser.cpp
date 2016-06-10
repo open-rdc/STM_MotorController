@@ -29,13 +29,25 @@ Parser::Parser(): command_buf_len(0), stocked_data_len(0), reply_byte(0)
   property_size[B3M_CONTROL_KP0] = sizeof(long);
   property_size[B3M_CONTROL_KD0] = sizeof(long);
   property_size[B3M_CONTROL_KI0] = sizeof(long);
+  property_size[B3M_CONFIG_MODEL_NUMBER] = sizeof(long);
+  property_size[B3M_CONFIG_MODEL_TYPE] = sizeof(long);
+  property_size[B3M_CONFIG_FW_VERSION] = sizeof(long);
 }
 
 int Parser::setCommand(unsigned char *command_data, int command_data_len)
 {
   int res = 0;
   if (command_data_len <= 0) return res;
-  if ((command_buf_len == 0)&&(command_data[0] < 5)) return res;
+  if (command_buf_len == 0) {
+    while(command_data[0] < 5){
+      if (command_data_len > 1){
+        for(int i = 0; i < command_data_len - 1; i ++)
+          command_data[i] = command_data[i + 1];
+        command_data_len --;
+      }
+      else return res;
+    }
+  }
   for(int i = 0; i < command_data_len; i ++)
     command_buf[command_buf_len ++] = command_data[i];
   int length = command_buf[0];
@@ -50,32 +62,38 @@ int Parser::setCommand(unsigned char *command_data, int command_data_len)
       command = command_buf[1];
       option = command_buf[2];
       if (command == B3M_CMD_WRITE){
-        if (command_buf[3] != property.ID) break;
         res = B3M_CMD_WRITE;
         int count = command_buf[length - 2];
-        int len = (length - 6) / count - 1;
+        int len = (length - 6) / count;
         int add = command_buf[length - 3];
-        unsigned char *p = (unsigned char *)&command_buf[4];
-        for(int j = 0; j < len;){
-          address_[stocked_data_len] = add + j;
-          if (property_size[add + j] == sizeof(char)){
-            data_[stocked_data_len] = (short)p[j];
-            j ++;
-          } else if (property_size[add + j] == sizeof(short)){
-            data_[stocked_data_len] = (short)((unsigned short)(p[j+1] << 8) + (unsigned short)p[j]);
-            j += 2;
-          } else if (property_size[add + j] == sizeof(long)){
-            data_[stocked_data_len] = (short)((unsigned short)(p[j+3] << 24)+
-              (unsigned short)(p[j+2] << 16) + (unsigned short)(p[j+1] << 8) + (unsigned short)p[j]);
-            j += 4;
-          }
-          if (stocked_data_len < (MAX_STOCKED_COMMAND - 1))
-            stocked_data_len ++;
+        for(int i = 0; i < count; i ++){
+          int index = 3 + i * len;
+          if (command_buf[index] != property.ID) continue;
+          unsigned char *p = (unsigned char *)&command_buf[index + 1];
+          for(int j = 0; j < (len - 1);){
+            int address = add + j;
+            address_[stocked_data_len] = address;
+            if (property_size[address] == sizeof(char)){
+              data_[stocked_data_len] = (short)p[j];
+              j ++;
+            } else if (property_size[address] == sizeof(short)){
+              data_[stocked_data_len] = (short)((unsigned short)(p[j+1] << 8) + (unsigned short)p[j]);
+              j += 2;
+            } else if (property_size[address] == sizeof(long)){
+              data_[stocked_data_len] = (short)((unsigned short)(p[j+3] << 24)+
+                (unsigned short)(p[j+2] << 16) + (unsigned short)(p[j+1] << 8) + (unsigned short)p[j]);
+              j += 4;
+            }
+            if (stocked_data_len < (MAX_STOCKED_COMMAND - 1))
+              stocked_data_len ++;
+          }          
         }
-        reply_byte = 5;
-        reply[0] = 5, reply[1] = 0x84, reply[2] = 0, reply[3] = property.ID;
-        reply[4] = 0;
-        for(int i = 0; i < 4; i ++) reply[4] += reply[i];
+        if (count == 1){
+          reply_byte = 5;
+          reply[0] = 5, reply[1] = 0x84, reply[2] = 0, reply[3] = property.ID;
+          reply[4] = 0;
+          for(int i = 0; i < 4; i ++) reply[4] += reply[i];
+        }
       } else if (command == B3M_CMD_READ){
         if (command_buf[3] != property.ID) break;
         res = B3M_CMD_READ;

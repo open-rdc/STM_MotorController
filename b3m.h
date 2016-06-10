@@ -232,14 +232,18 @@ typedef struct {
   ulong Ki2;
   ushort StaticFriction2;
   ushort DynamicFriction2;
-  byte dymmy11[16];
+  byte dymmy11[15];
   
   byte StatusError;
   byte StatusSystem;
   byte StatusMotor;
   byte StatusUart;
   byte StatusCommand;
-
+  
+  ulong ModelNumber;
+  ulong ModelType;
+  ulong FwVersion;
+  
 } Property;
 
 #pragma pop

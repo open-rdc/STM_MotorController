@@ -1,3 +1,5 @@
+char version[4] = {16, 06, 11, 1};
+
 #include "mbed.h"
 #include "AS5600.h"
 #include "RS485.h"
@@ -7,7 +9,7 @@
 #include "b3m.h"
 
 #define GAIN 10.0
-#define GAIN_I 1.0
+#define GAIN_I 0.0
 #define PUNCH 0.20
 #define DEAD_BAND_WIDTH 0.2
 #define MAX_ANGLE 60.0
@@ -89,6 +91,7 @@ void initialize()
   property.Kp0 = GAIN * 100;
   property.Ki0 = GAIN_I * 100;
   property.StaticFriction0 = PUNCH *100;
+  property.FwVersion = (version[0] << 24) + (version[1] << 16) + (version[2] << 8) + version[3];
 }
 
 int main() {
@@ -101,6 +104,7 @@ int main() {
   t.reset();
   motor.servoOn();
   memcpy((void *)&property, (void *)FLASH_ADDRESS, sizeof(property));
+  property.FwVersion = (version[0] << 24) + (version[1] << 16) + (version[2] << 8) + version[3];
   
   while(1){
     status.led_count ++;

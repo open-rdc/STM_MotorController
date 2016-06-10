@@ -9,7 +9,7 @@ char version[4] = {16, 06, 11, 1};
 #include "b3m.h"
 
 #define GAIN 10.0
-#define GAIN_I 1.0
+#define GAIN_I 0.0
 #define PUNCH 0.20
 #define DEAD_BAND_WIDTH 0.2
 #define MAX_ANGLE 60.0
@@ -104,6 +104,7 @@ int main() {
   t.reset();
   motor.servoOn();
   memcpy((void *)&property, (void *)FLASH_ADDRESS, sizeof(property));
+  property.FwVersion = (version[0] << 24) + (version[1] << 16) + (version[2] << 8) + version[3];
   
   while(1){
     status.led_count ++;
@@ -122,7 +123,6 @@ int main() {
     if (command == B3M_CMD_WRITE){
       led2 = led2 ^ 1;
     } else if (command == B3M_CMD_SAVE){
-      property.FwVersion = (version[0] << 24) + (version[1] << 16) + (version[2] << 8) + version[3];
       flash.write(FLASH_ADDRESS, (uint8_t *)&property, sizeof(property));
     } else if (command == B3M_CMD_LOAD){
       memcpy((void *)&property, (void *)FLASH_ADDRESS, sizeof(property));

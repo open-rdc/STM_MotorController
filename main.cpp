@@ -1,3 +1,5 @@
+char version[4] = {16, 06, 11, 1};
+
 #include "mbed.h"
 #include "AS5600.h"
 #include "RS485.h"
@@ -89,6 +91,7 @@ void initialize()
   property.Kp0 = GAIN * 100;
   property.Ki0 = GAIN_I * 100;
   property.StaticFriction0 = PUNCH *100;
+  property.FwVersion = (version[0] << 24) + (version[1] << 16) + (version[2] << 8) + version[3];
 }
 
 int main() {
@@ -119,6 +122,7 @@ int main() {
     if (command == B3M_CMD_WRITE){
       led2 = led2 ^ 1;
     } else if (command == B3M_CMD_SAVE){
+      property.FwVersion = (version[0] << 24) + (version[1] << 16) + (version[2] << 8) + version[3];
       flash.write(FLASH_ADDRESS, (uint8_t *)&property, sizeof(property));
     } else if (command == B3M_CMD_LOAD){
       memcpy((void *)&property, (void *)FLASH_ADDRESS, sizeof(property));

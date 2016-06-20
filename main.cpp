@@ -1,4 +1,4 @@
-char version[4] = {16, 06, 11, 1};
+char version[4] = {16, 06, 20, 1};
 
 #include "mbed.h"
 #include "AS5600.h"

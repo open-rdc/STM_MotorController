@@ -34,20 +34,31 @@ Parser::Parser(): command_buf_len(0), stocked_data_len(0), reply_byte(0)
   property_size[B3M_CONFIG_FW_VERSION] = sizeof(long);
 }
 
+/*!
+ * @brief parse command
+ *
+ * @param[in] command_data          additional command data
+ * @param[in] command_data_len     length of additional command data
+ * 
+ * [READ]
+ * > command data
+ * size command option id address length sum
+ * > reply status data (only single mode)
+ * size command status id data(1) data(2) ... sum
+ *
+ * [WRITE]
+ * > command data
+ * size command option id1 data(1) data(2) ... id2 data(1) data(2) ... address count sum
+ * > reply status data (only single mode)
+ * size command status id sum
+ *
+ * problem about noise
+ * http://www.softech.co.jp/mm_101102_firm.htm
+ */ 
 int Parser::setCommand(unsigned char *command_data, int command_data_len)
 {
   int res = 0;
   if (command_data_len <= 0) return res;
-  if (command_buf_len == 0) {
-    while(command_data[0] < 5){
-      if (command_data_len > 1){
-        for(int i = 0; i < command_data_len - 1; i ++)
-          command_data[i] = command_data[i + 1];
-        command_data_len --;
-      }
-      else return res;
-    }
-  }
   for(int i = 0; i < command_data_len; i ++)
     command_buf[command_buf_len ++] = command_data[i];
   int length = command_buf[0];
@@ -88,7 +99,7 @@ int Parser::setCommand(unsigned char *command_data, int command_data_len)
               stocked_data_len ++;
           }          
         }
-#if 0
+#if 1
         if (count == 1){
           reply_byte = 5;
           reply[0] = 5, reply[1] = 0x84, reply[2] = 0, reply[3] = property.ID;

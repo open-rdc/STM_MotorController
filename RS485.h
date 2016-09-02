@@ -32,7 +32,11 @@ public:
 
 	void baud(int baudrate);
 
+  void guardTime(int guard_time_us);
+    
   int readable();
+
+  bool isEnableSend();
 
   int putc(int c);
 
@@ -45,13 +49,15 @@ public:
 
 private:
   Serial serial_;
-	DigitalOut select_out_;
+  DigitalOut select_out_;     // 0:input, 1:output
+  int guard_time_us_;
 	void txFinishCallback(void);
 	void rxFinishCallback(void);
 
   int rx_buf[MAX_RECV_BUFFER];
   int p_read;
   int p_stock;
+  Timer send_timer_, recv_timer_;
 };
 
 #endif

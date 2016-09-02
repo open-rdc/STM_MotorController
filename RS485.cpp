@@ -3,12 +3,14 @@
 #include <stdarg.h>
 
 RS485::RS485(PinName tx, PinName rx, PinName selectOut) :
-    serial_(tx, rx), select_out_(selectOut), p_read(0), p_stock(0)
+    serial_(tx, rx), select_out_(selectOut), guard_time_us_(200), p_read(0), p_stock(0)
 {
 	select_out_ = 0;	// input
   serial_.format(8, Serial::None, 1);
 	serial_.attach(this, &RS485::txFinishCallback, serial_.TxIrq);
 	serial_.attach(this, &RS485::rxFinishCallback, serial_.RxIrq);
+  recv_timer_.start();
+  send_timer_.start();
 }
 
 void RS485::baud(int baudrate){
@@ -16,14 +18,24 @@ void RS485::baud(int baudrate){
   wait(0.001);
 }
 
+void RS485::guardTime(int guard_time_us){
+    guard_time_us_ = guard_time_us;
+}
+
 int RS485::readable()
 {
   return serial_.readable();
 }
 
+bool RS485::isEnableSend()
+{
+	if ((select_out_ == 0) && (recv_timer_.read_us() < guard_time_us_)) return false;
+  return true;
+}
+
 int RS485::putc(int c)
 {
-	select_out_ = 1;
+  select_out_ = 1;
 	return serial_.putc(c);
 }
 
@@ -47,6 +59,8 @@ int RS485::printf(const char* format, ...)
 void RS485::txFinishCallback(void)
 {
 	select_out_ = 0;
+  send_timer_.reset();
+  send_timer_.start();
 }
 
 ssize_t RS485::write(const void* buffer, size_t length)
@@ -61,7 +75,7 @@ ssize_t RS485::write(const void* buffer, size_t length)
 
 ssize_t RS485::read(void* buffer, size_t length)
 {
- 	unsigned char *buf = (unsigned char *)buffer;
+	unsigned char *buf = (unsigned char *)buffer;
   int len = p_stock - p_read;
   if (len < 0) len += MAX_RECV_BUFFER;
   if (len > length) len = length;
@@ -74,6 +88,12 @@ ssize_t RS485::read(void* buffer, size_t length)
 
 void RS485::rxFinishCallback(void)
 {
-  rx_buf[p_stock ++] = serial_.getc();
-  if (p_stock == MAX_RECV_BUFFER) p_stock = 0;
+	if ((select_out_ == 1) || (send_timer_.read_us() < guard_time_us_)){
+    serial_.getc();
+  } else {
+    rx_buf[p_stock ++] = serial_.getc();
+    if (p_stock == MAX_RECV_BUFFER) p_stock = 0;
+    recv_timer_.reset();
+    recv_timer_.start();
+  }
 }

@@ -1,4 +1,5 @@
-char version[4] = {16, 06, 20, 1};
+// version { year, month, day, no }
+char version[4] = { 16, 9, 2, 3 };
 
 #include "mbed.h"
 #include "AS5600.h"
@@ -30,23 +31,24 @@ char version[4] = {16, 06, 20, 1};
 
 extern Property property;
 
-DigitalOut blink_led(LED1);
-DigitalOut led2(LED2);
-DigitalOut led3(LED3);
-DigitalOut led4(LED4);
+DigitalOut blink_led(LED1);   // toggle LED every control loop
+DigitalOut led2(LED2);        // toggle LED every send message
+DigitalOut led3(LED3);        // servo on
+DigitalOut led4(LED4);        // no assign
 BusIn sw(SW1, SW2);
 STM_BLDCMotor motor;
 AS5600 as5600(I2C_SDA, I2C_SCL);
 RS485 rs485(RS485_TX, RS485_RX, RS485_SELECT);
 Parser commnand_parser;
 Flash flash;
-Timer t;
+Timer t, loop_timer;
 
 const int MAX_COMMAND_LEN = 256; 
 unsigned char command_data[MAX_COMMAND_LEN];
 int command_len = 0;
-const int LED_COUNT_MAX = 500;
+const int LED_TOGGLE_COUNT = 500;
 unsigned char send_buf[256];
+unsigned char send_buf_len = 0;
 
 struct RobotStatus {
   float target_angle;
@@ -72,7 +74,7 @@ float rad2deg100(float rad){
 
 void initialize()
 {
-  status.target_angle = as5600;
+  status.target_angle = as5600;   // read angle
   status.is_servo_on = false;
   status.led_state = 0;
   status.led_count = 0;
@@ -82,7 +84,7 @@ void initialize()
   
   memset((void *)&property, 0, sizeof(property));
   property.ID = 0;
-  property.Baudrate = 115200;
+  property.Baudrate = BAUDRATE;
   property.PositionMinLimit = MIN_ANGLE * 100;
   property.PositionMaxLimit = MAX_ANGLE * 100;
   property.PositionCenterOffset = rad2deg100(status.target_angle);
@@ -99,16 +101,17 @@ int main() {
   bool is_status_changed = false;
 	blink_led = 0;
 	sw.mode(PullUp);
-  rs485.baud(BAUDRATE);
-	as5600 = as5600;
+	as5600 = as5600;    // ??
   t.reset();
-  motor.servoOn();
   memcpy((void *)&property, (void *)FLASH_ADDRESS, sizeof(property));
   property.FwVersion = (version[0] << 24) + (version[1] << 16) + (version[2] << 8) + version[3];
+  rs485.baud(property.Baudrate);
+  motor.servoOn();
+  loop_timer.start();
   
-  while(1){
+  while(1){         // main loop
     status.led_count ++;
-    if (status.led_count > LED_COUNT_MAX){
+    if (status.led_count > LED_TOGGLE_COUNT){
       status.led_state ^= 1;
       blink_led = status.led_state;
       status.led_count = 0;
@@ -210,21 +213,26 @@ int main() {
     
 		if (status.is_servo_on) motor = val;
     else motor = 0;
-    {
-      int len = commnand_parser.getReply(send_buf);
-      if (len > 0){
-        wait_us(30);
-        for(int i = 0; i < len; i ++) rs485.putc(send_buf[i]);
+    
+    if (send_buf_len == 0){
+      send_buf_len = commnand_parser.getReply(send_buf);
+    } else {
+      if (rs485.isEnableSend()){
+        for(int i = 0; i < send_buf_len; i ++) rs485.putc(send_buf[i]);
+        send_buf_len = 0;
       }
     }
+    
     if (is_status_changed){
       motor.status_changed();
       is_status_changed = false;
     }
-    wait(0.001);
+    while(loop_timer.read_us() < 1000) wait_us(1);
+    loop_timer.reset();
+    loop_timer.start();
   }
 	motor = 0;
-  while(1){
+  while(1){   // error mode
       blink_led = led2 = led3 = led4 = 1;
       wait(0.2);
       blink_led = led2 = led3 = led4 = 0;

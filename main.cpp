@@ -1,5 +1,5 @@
 // version { year, month, day, no }
-char version[4] = { 16, 9, 2, 3 };
+char version[4] = { 16, 9, 3, 1 };
 
 #include "mbed.h"
 #include "AS5600.h"
@@ -11,8 +11,8 @@ char version[4] = { 16, 9, 2, 3 };
 
 #define GAIN 10.0
 #define GAIN_I 0.0
-#define PUNCH 0.20
-#define DEAD_BAND_WIDTH 0.2
+#define PUNCH 0.0
+#define DEAD_BAND_WIDTH 0.1
 #define MAX_ANGLE 60.0
 #define MIN_ANGLE -60.0
 #define BAUDRATE 115200

@@ -20,15 +20,15 @@
  * AS5600 as5600(I2C_SDA, I2C_SCL);
  * 
  * int main() {
- * 	led = 0;
- * 	sw.mode(PullUp);
- * 	while(1) {
- *		float angle = as5600;
- *		printf("%f\r\n", angle);
- *		if (sw[0] == 0) as5600 = 0;
- *		wait(0.5);
- *	}
- *}
+ *   led = 0;
+ *   sw.mode(PullUp);
+ *   while(1) {
+ *     float angle = as5600;
+ *     printf("%f\r\n", angle);
+ *     if (sw[0] == 0) as5600 = 0;
+ *     wait(0.5);
+ *   }
+ * }
  */
 
 class AS5600
@@ -53,15 +53,15 @@ void write(float value);
     return *this;
   }
 
-	operator float(){
-		return read();
-	}
+  operator float(){
+    return read();
+  }
 
 private:
   I2C i2c;
   float angle;
   float angle0;
-	int error;
+  int error;
 };
 
 #endif

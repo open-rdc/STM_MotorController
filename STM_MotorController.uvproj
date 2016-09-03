@@ -1161,11 +1161,6 @@
               <FilePath>mbed/wait_api.h</FilePath>
             </File>
             <File>
-              <FileName>Watchdog.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Watchdog.h</FilePath>
-            </File>
-            <File>
               <FileName>AS5600.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\AS5600.h</FilePath>
@@ -1184,61 +1179,6 @@
               <FileName>STM32_USB48MHz.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\STM32_USB48MHz\STM32_USB48MHz.h</FilePath>
-            </File>
-            <File>
-              <FileName>CircBuffer.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\L152RE_USBDevice\USBSerial\CircBuffer.h</FilePath>
-            </File>
-            <File>
-              <FileName>USBCDC.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\L152RE_USBDevice\USBSerial\USBCDC.h</FilePath>
-            </File>
-            <File>
-              <FileName>USBSerial.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\L152RE_USBDevice\USBSerial\USBSerial.h</FilePath>
-            </File>
-            <File>
-              <FileName>USBEndpoints.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\L152RE_USBDevice\USBDevice\USBEndpoints.h</FilePath>
-            </File>
-            <File>
-              <FileName>USBEndpoints_KL25Z.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\L152RE_USBDevice\USBDevice\USBEndpoints_KL25Z.h</FilePath>
-            </File>
-            <File>
-              <FileName>USBEndpoints_LPC11U.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\L152RE_USBDevice\USBDevice\USBEndpoints_LPC11U.h</FilePath>
-            </File>
-            <File>
-              <FileName>USBEndpoints_LPC17_LPC23.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\L152RE_USBDevice\USBDevice\USBEndpoints_LPC17_LPC23.h</FilePath>
-            </File>
-            <File>
-              <FileName>USBEndpoints_Maxim.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\L152RE_USBDevice\USBDevice\USBEndpoints_Maxim.h</FilePath>
-            </File>
-            <File>
-              <FileName>USBEndpoints_RZ_A1H.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\L152RE_USBDevice\USBDevice\USBEndpoints_RZ_A1H.h</FilePath>
-            </File>
-            <File>
-              <FileName>USBEndpoints_STM32F4.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\L152RE_USBDevice\USBDevice\USBEndpoints_STM32F4.h</FilePath>
-            </File>
-            <File>
-              <FileName>USBEndpoints_STM32L1.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\L152RE_USBDevice\USBDevice\USBEndpoints_STM32L1.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -1524,26 +1464,6 @@
               <FileName>system_stm32f1xx.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\system_stm32f1xx.c</FilePath>
-            </File>
-            <File>
-              <FileName>USBCDC.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>.\L152RE_USBDevice\USBSerial\USBCDC.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>USBSerial.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>.\L152RE_USBDevice\USBSerial\USBSerial.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>USBDevice.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>.\L152RE_USBDevice\USBDevice\USBDevice.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>USBHAL_STM32L1.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>.\L152RE_USBDevice\USBDevice\USBHAL_STM32L1.cpp</FilePath>
             </File>
             <File>
               <FileName>Parser.cpp</FileName>

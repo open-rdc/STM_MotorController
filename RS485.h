@@ -14,10 +14,10 @@
  * RS485 rs485(RS485_TX, RS485_RX, RS485_SELECT); 
  * 
  * int main() {
- * 	while(1) {
- *		  rs485.printf("Hello World\r\n");
- *		  wait(0.5);
- *	  }
+ *   while(1) {
+ *     rs485.printf("Hello World\r\n");
+ *     wait(0.5);
+ *   }
  * }
  */
 
@@ -28,9 +28,9 @@
 class RS485
 {
 public:
-	RS485(PinName tx, PinName rx, PinName selectOut);
+  RS485(PinName tx, PinName rx, PinName selectOut);
 
-	void baud(int baudrate);
+  void baud(int baudrate);
 
   void guardTime(int guard_time_us);
     
@@ -44,15 +44,15 @@ public:
 
   int printf(const char* format, ...);
 
-	virtual ssize_t write(const void* buffer, size_t length);
-	virtual ssize_t read(void* buffer, size_t length);
+  virtual ssize_t write(const void* buffer, size_t length);
+  virtual ssize_t read(void* buffer, size_t length);
 
 private:
   Serial serial_;
   DigitalOut select_out_;     // 0:input, 1:output
   int guard_time_us_;
-	void txFinishCallback(void);
-	void rxFinishCallback(void);
+  void txFinishCallback(void);
+  void rxFinishCallback(void);
 
   int rx_buf[MAX_RECV_BUFFER];
   int p_read;

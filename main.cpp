@@ -95,11 +95,11 @@ void initialize()
 }
 
 int main() {
-	initialize();
+  initialize();
   bool is_status_changed = false;
-	blink_led = 0;
-	sw.mode(PullUp);
-	as5600 = as5600;    // ??
+  blink_led = 0;
+  sw.mode(PullUp);
+  as5600 = as5600;    // ??
   t.reset();
   memcpy((void *)&property, (void *)FLASH_ADDRESS, sizeof(property));
   property.FwVersion = (version[0] << 24) + (version[1] << 16) + (version[2] << 8) + version[3];
@@ -183,7 +183,7 @@ int main() {
     }
 
     property.CurrentPosition = rad2deg100(as5600);
-		if (as5600.getError()) break;
+    if (as5600.getError()) break;
     float error = deg100_2rad(property.CurrentPosition) - status.target_angle;
     while(error > M_PI) error -= 2.0 * M_PI;
     while(error < -M_PI) error += 2.0 * M_PI;
@@ -209,7 +209,7 @@ int main() {
     float val = max(min(pwm, max_torque), -max_torque);
     if (status.isWakeupMode) val *= 0.3;
     
-		if (status.is_servo_on) motor = val;
+    if (status.is_servo_on) motor = val;
     else motor = 0;
     
     if (send_buf_len == 0){
@@ -229,7 +229,7 @@ int main() {
     loop_timer.reset();
     loop_timer.start();
   }
-	motor = 0;
+  motor = 0;
   while(1){   // error mode
       blink_led = led2 = led3 = led4 = 1;
       wait(0.2);

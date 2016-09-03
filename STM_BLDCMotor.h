@@ -17,7 +17,7 @@
  *
  * int main(){
  *   motor.servoOn();
- *   motor = 0.1;		// duty ratio
+ *   motor = 0.1;    // duty ratio
  * }
  * @endcode
  */
@@ -36,7 +36,7 @@ public:
 
     void servoOff(void);
 
-		void setMaxDutyRatio(float max_ratio);
+    void setMaxDutyRatio(float max_ratio);
 
     void setPwmPeriod(double seconds);
 
@@ -71,35 +71,35 @@ public:
 #endif
 
 private:
-		PwmOut uh_;
-		DigitalOut ul_;
-		PwmOut vh_;
-		DigitalOut vl_;
-		PwmOut wh_;
-		DigitalOut wl_;
-		
-		InterruptIn hole1_;
-		InterruptIn hole2_;
-		InterruptIn hole3_;
+    PwmOut uh_;
+    DigitalOut ul_;
+    PwmOut vh_;
+    DigitalOut vl_;
+    PwmOut wh_;
+    DigitalOut wl_;
+    
+    InterruptIn hole1_;
+    InterruptIn hole2_;
+    InterruptIn hole3_;
 
-		double value_;
+    double value_;
     double period_sec_;
-		double max_ratio_;
+    double max_ratio_;
     bool enable_;
-		int hole_state;
-		int hole_state_no;
+    int hole_state;
+    int hole_state_no;
 
     static int switching_table[6][3];
     void drive(int u, int v, int w);
 
-		enum h_bridge{
-			UH = 0,
-			UL,
-			VH,
-			VL,
-			WH,
-			WL,
-		};
+    enum h_bridge{
+      UH = 0,
+      UL,
+      VH,
+      VL,
+      WH,
+      WL,
+    };
 };
 
 #endif

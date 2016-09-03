@@ -5,10 +5,10 @@
 RS485::RS485(PinName tx, PinName rx, PinName selectOut) :
     serial_(tx, rx), select_out_(selectOut), guard_time_us_(200), p_read(0), p_stock(0)
 {
-	select_out_ = 0;	// input
+  select_out_ = 0;  // input
   serial_.format(8, Serial::None, 1);
-	serial_.attach(this, &RS485::txFinishCallback, serial_.TxIrq);
-	serial_.attach(this, &RS485::rxFinishCallback, serial_.RxIrq);
+  serial_.attach(this, &RS485::txFinishCallback, serial_.TxIrq);
+  serial_.attach(this, &RS485::rxFinishCallback, serial_.RxIrq);
   recv_timer_.start();
   send_timer_.start();
 }
@@ -29,67 +29,67 @@ int RS485::readable()
 
 bool RS485::isEnableSend()
 {
-	if ((select_out_ == 0) && (recv_timer_.read_us() < guard_time_us_)) return false;
+  if ((select_out_ == 0) && (recv_timer_.read_us() < guard_time_us_)) return false;
   return true;
 }
 
 int RS485::putc(int c)
 {
   select_out_ = 1;
-	return serial_.putc(c);
+  return serial_.putc(c);
 }
 
 int RS485::getc()
 {
-	select_out_ = 0;
-	return serial_.getc();
+  select_out_ = 0;
+  return serial_.getc();
 }
 
 int RS485::printf(const char* format, ...)
 {
-	select_out_ = 1;
-	
-	va_list arg;
-	va_start(arg, format);
-	int res = serial_.vprintf(format, arg);
-	va_end(arg);	
-	return res;
+  select_out_ = 1;
+  
+  va_list arg;
+  va_start(arg, format);
+  int res = serial_.vprintf(format, arg);
+  va_end(arg);  
+  return res;
 }
 
 void RS485::txFinishCallback(void)
 {
-	select_out_ = 0;
+  select_out_ = 0;
   send_timer_.reset();
   send_timer_.start();
 }
 
 ssize_t RS485::write(const void* buffer, size_t length)
 {
-	char *buf = (char *)buffer;
-	for(int i = 0; i < length; i ++){
-		serial_.putc((int)*buf++);
-	}
-	
-	return length;
+  char *buf = (char *)buffer;
+  for(int i = 0; i < length; i ++){
+    serial_.putc((int)*buf++);
+  }
+  
+  return length;
 }
 
 ssize_t RS485::read(void* buffer, size_t length)
 {
-	if (recv_timer_.read_us() < (guard_time_us_ / 2)) return 0;
+  if (recv_timer_.read_us() < (guard_time_us_ / 2)) return 0;
   unsigned char *buf = (unsigned char *)buffer;
   int len = p_stock - p_read;
   if (len < 0) len += MAX_RECV_BUFFER;
   if (len > length) len = length;
-	for(int i = 0; i < len; i ++){
+  for(int i = 0; i < len; i ++){
     *buf++ = rx_buf[p_read++];
     if (p_read >= MAX_RECV_BUFFER) p_read = 0;
-	}
-	return len;
+  }
+  return len;
 }
 
 void RS485::rxFinishCallback(void)
 {
-	if ((select_out_ == 1) || (send_timer_.read_us() < guard_time_us_)){
+  if ((select_out_ == 1) || (send_timer_.read_us() < guard_time_us_)){
     serial_.getc();
   } else {
     rx_buf[p_stock ++] = serial_.getc();

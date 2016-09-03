@@ -15,9 +15,7 @@ char version[4] = { 16, 9, 2, 3 };
 #define DEAD_BAND_WIDTH 0.2
 #define MAX_ANGLE 60.0
 #define MIN_ANGLE -60.0
-#define OFFSET_ANGLE 2.3
 #define BAUDRATE 115200
-#define OFFSET 2.3;
 #define FLASH_ADDRESS 0x08010000
 
 #ifndef M_PI

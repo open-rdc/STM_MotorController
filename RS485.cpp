@@ -75,7 +75,8 @@ ssize_t RS485::write(const void* buffer, size_t length)
 
 ssize_t RS485::read(void* buffer, size_t length)
 {
-	unsigned char *buf = (unsigned char *)buffer;
+	if (recv_timer_.read_us() < (guard_time_us_ / 2)) return 0;
+  unsigned char *buf = (unsigned char *)buffer;
   int len = p_stock - p_read;
   if (len < 0) len += MAX_RECV_BUFFER;
   if (len > length) len = length;

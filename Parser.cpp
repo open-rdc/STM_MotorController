@@ -99,15 +99,13 @@ int Parser::setCommand(unsigned char *command_data, int command_data_len)
             if (stocked_data_len < (MAX_STOCKED_COMMAND - 1))
               stocked_data_len ++;
           }          
+          if (count == 1){
+            reply_byte = 5;
+            reply[0] = 5, reply[1] = 0x84, reply[2] = 0, reply[3] = property.ID;
+            reply[4] = 0;
+            for(int i = 0; i < 4; i ++) reply[4] += reply[i];
+          }
         }
-#if 1
-        if (count == 1){
-          reply_byte = 5;
-          reply[0] = 5, reply[1] = 0x84, reply[2] = 0, reply[3] = property.ID;
-          reply[4] = 0;
-          for(int i = 0; i < 4; i ++) reply[4] += reply[i];
-        }
-#endif
       } else if (command == B3M_CMD_READ){
         if (command_buf[3] != property.ID) break;
         res = B3M_CMD_READ;

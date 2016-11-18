@@ -1,5 +1,5 @@
 // version { year, month, day, no }
-char version[4] = { 16, 9, 9, 1 };
+char version[4] = { 16, 11, 17, 1 };
 
 #include "mbed.h"
 #include "AS5600.h"
@@ -164,12 +164,18 @@ int main() {
         case B3M_CONTROL_KP0:
           property.Kp0 = data;
           break;
+        case B3M_CONTROL_KD0:
+          property.Kd0 = data;
+          break;
         case B3M_CONTROL_KI0:
           property.Ki0 = data;
           status.err_i = 0;
           break;
         case B3M_CONTROL_STATIC_FRICTION0:
           property.StaticFriction0 = data;
+          break;
+        case B3M_CONTROL_KP1:
+          property.Kp1 = data;
           break;
         case B3M_SERVO_SERVO_MODE:
           t.reset();
@@ -182,8 +188,10 @@ int main() {
       }
     }
 
+    property.PreviousPosition = property.CurrentPosition;
     property.CurrentPosition = rad2deg100(as5600);
     if (as5600.getError()) break;
+    property.CurrentVelosity = property.CurrentVelosity * 0.9 + (property.CurrentPosition - property.PreviousPosition) / 0.001 * 0.1;
     float error = deg100_2rad(property.CurrentPosition) - status.target_angle;
     while(error > M_PI) error -= 2.0 * M_PI;
     while(error < -M_PI) error += 2.0 * M_PI;
@@ -191,9 +199,12 @@ int main() {
     status.err_i = max(min(status.err_i, 1.0f), -1.0f); 
 
     float gain = property.Kp0 / 100.0f;
+    float gain1 = property.Kp1 / 100.0f;
+    float gain_d = property.Kd0 / 100.0f;
     float gain_i = property.Ki0 / 100.0f;
     float punch = property.StaticFriction0 / 100.0f;
     float pwm = gain_i * status.err_i;
+    pwm += gain_d * deg100_2rad(property.CurrentVelosity);
     float margin = deg100_2rad(property.DeadBandWidth);
     if (fabs(error) > margin){
       if (error > 0){
@@ -203,6 +214,8 @@ int main() {
         error += margin;
         pwm += gain * error - punch;
       }
+    } else {
+        pwm += gain1 * error;
     }
     
     float max_torque = property.TorqueLimit / 100.0f;

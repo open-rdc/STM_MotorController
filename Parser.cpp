@@ -29,6 +29,12 @@ Parser::Parser(): command_buf_len(0), stocked_data_len(0), reply_byte(0)
   property_size[B3M_CONTROL_KP0] = sizeof(long);
   property_size[B3M_CONTROL_KD0] = sizeof(long);
   property_size[B3M_CONTROL_KI0] = sizeof(long);
+  property_size[B3M_CONTROL_KP1] = sizeof(long);
+  property_size[B3M_CONTROL_KD1] = sizeof(long);
+  property_size[B3M_CONTROL_KI1] = sizeof(long);
+  property_size[B3M_CONTROL_KP2] = sizeof(long);
+  property_size[B3M_CONTROL_KD2] = sizeof(long);
+  property_size[B3M_CONTROL_KI2] = sizeof(long);
   property_size[B3M_CONFIG_MODEL_NUMBER] = sizeof(long);
   property_size[B3M_CONFIG_MODEL_TYPE] = sizeof(long);
   property_size[B3M_CONFIG_FW_VERSION] = sizeof(long);

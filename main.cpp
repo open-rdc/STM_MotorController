@@ -1,5 +1,5 @@
 // version { year, month, day, no }
-char version[4] = { 16, 11, 17, 1 };
+char version[4] = { 16, 11, 23, 1 };
 
 #include "mbed.h"
 #include "AS5600.h"
@@ -106,6 +106,7 @@ int main() {
   rs485.baud(property.Baudrate);
   motor.servoOn();
   loop_timer.start();
+  int time_from_last_update = 0;
   
   while(1){         // main loop
     status.led_count ++;
@@ -196,7 +197,7 @@ int main() {
     while(error > M_PI) error -= 2.0 * M_PI;
     while(error < -M_PI) error += 2.0 * M_PI;
     status.err_i += error * 0.001f;
-    status.err_i = max(min(status.err_i, 1.0f), -1.0f); 
+    status.err_i = max(min(status.err_i, 0.001f), -0.001f); 
 
     float gain = property.Kp0 / 100.0f;
     float gain1 = property.Kp1 / 100.0f;
@@ -234,10 +235,12 @@ int main() {
       }
     }
     
-    if (is_status_changed){
+    if ((is_status_changed)||(time_from_last_update >= 10)){
       motor.status_changed();
       is_status_changed = false;
+      time_from_last_update = 0;
     }
+    time_from_last_update ++;
     while(loop_timer.read_us() < 1000) wait_us(1);
     loop_timer.reset();
     loop_timer.start();

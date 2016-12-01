@@ -58,9 +58,9 @@ int RS485::printf(const char* format, ...)
 
 void RS485::txFinishCallback(void)
 {
-  select_out_ = 0;
   send_timer_.reset();
   send_timer_.start();
+  select_out_ = 0;
 }
 
 ssize_t RS485::write(const void* buffer, size_t length)
@@ -91,6 +91,7 @@ void RS485::rxFinishCallback(void)
 {
   if ((select_out_ == 1) || (send_timer_.read_us() < guard_time_us_)){
     serial_.getc();
+    p_read = p_stock;
   } else {
     rx_buf[p_stock ++] = serial_.getc();
     if (p_stock == MAX_RECV_BUFFER) p_stock = 0;

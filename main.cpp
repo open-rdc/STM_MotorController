@@ -1,5 +1,5 @@
 // version { year, month, day, no }
-char version[4] = { 16, 11, 23, 1 };
+char version[4] = { 16, 12, 1, 1 };
 
 #include "mbed.h"
 #include "AS5600.h"
@@ -228,7 +228,8 @@ int main() {
     
     if (send_buf_len == 0){
       send_buf_len = commnand_parser.getReply(send_buf);
-    } else {
+    }
+    if (send_buf_len > 0){
       if (rs485.isEnableSend()){
         for(int i = 0; i < send_buf_len; i ++) rs485.putc(send_buf[i]);
         send_buf_len = 0;

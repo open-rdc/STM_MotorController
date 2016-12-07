@@ -1,5 +1,5 @@
 // version { year, month, day, no }
-char version[4] = { 16, 12, 1, 1 };
+char version[4] = { 16, 12, 7, 1 };
 
 #include "mbed.h"
 #include "AS5600.h"
@@ -225,6 +225,7 @@ int main() {
     
     if (status.is_servo_on) motor = val;
     else motor = 0;
+    property.PwmDuty = motor * 100;
     
     if (send_buf_len == 0){
       send_buf_len = commnand_parser.getReply(send_buf);

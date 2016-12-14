@@ -9,3 +9,8 @@ Condition
 3) Magnetic absolute encoder  
 
 ![dsc_0016](https://cloud.githubusercontent.com/assets/5755200/21163884/efe81f6c-c1d8-11e6-906c-171eca939943.JPG)
+
+Example used for humanoid robot
+(RoboCup2017 Qualification Video)
+
+[![Ixion](http://img.youtube.com/vi/zSspMXcbzlg/0.jpg)](http://www.youtube.com/watch?v=zSspMXcbzlg)

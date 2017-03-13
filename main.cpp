@@ -1,5 +1,5 @@
 // version { year, month, day, no }
-char version[4] = { 16, 12, 7, 1 };
+char version[4] = { 17, 03, 13, 1 };
 
 #include "mbed.h"
 #include "AS5600.h"
@@ -107,6 +107,7 @@ int main() {
   motor.servoOn();
   loop_timer.start();
   int time_from_last_update = 0;
+  int num_encoder_read_error = 0;
   
   while(1){         // main loop
     status.led_count ++;
@@ -191,7 +192,14 @@ int main() {
 
     property.PreviousPosition = property.CurrentPosition;
     property.CurrentPosition = rad2deg100(as5600);
-    if (as5600.getError()) break;
+    if (as5600.getError()){
+      led4 = 1;
+      num_encoder_read_error ++;
+      if (num_encoder_read_error >= 10) break;
+      as5600.resetError();
+    } else {
+      num_encoder_read_error = 0;
+    }
     property.CurrentVelosity = property.CurrentVelosity * 0.9 + (property.CurrentPosition - property.PreviousPosition) / 0.001 * 0.1;
     float error = deg100_2rad(property.CurrentPosition) - status.target_angle;
     while(error > M_PI) error -= 2.0 * M_PI;

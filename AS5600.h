@@ -44,6 +44,8 @@ public:
 
   int getError();
 
+  void resetError();
+
 void write(float value);
 
   float read();

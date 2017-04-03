@@ -1,5 +1,5 @@
 // version { year, month, day, no }
-char version[4] = { 17, 03, 13, 1 };
+char version[4] = { 17, 04, 03, 1 };
 
 #include "mbed.h"
 #include "AS5600.h"
@@ -39,7 +39,7 @@ AS5600 as5600(I2C_SDA, I2C_SCL);
 RS485 rs485(RS485_TX, RS485_RX, RS485_SELECT);
 Parser commnand_parser;
 Flash flash;
-Timer t, loop_timer;
+Timer t, loop_timer, position_read_timer;
 
 const int MAX_COMMAND_LEN = 256; 
 unsigned char command_data[MAX_COMMAND_LEN];
@@ -50,12 +50,14 @@ unsigned char send_buf_len = 0;
 
 struct RobotStatus {
   float target_angle;
+  float initial_angle;
   bool is_servo_on;
   bool change_target;
   bool isWakeupMode;
   int led_state;
   int led_count;
   float err_i;
+  int pulse_per_rotate;
 } status;
 
 float deg100_2rad(float deg){
@@ -70,9 +72,10 @@ float rad2deg100(float rad){
   return rad * 18000.0 / M_PI;
 }
 
-void initialize()
+int initialize()
 {
-  status.target_angle = as5600;   // read angle
+  status.initial_angle = status.target_angle = as5600;   // read angle
+  if (as5600.getError()) return -1;
   status.is_servo_on = false;
   status.led_state = 0;
   status.led_count = 0;
@@ -92,22 +95,26 @@ void initialize()
   property.Ki0 = GAIN_I * 100;
   property.StaticFriction0 = PUNCH *100;
   property.FwVersion = (version[0] << 24) + (version[1] << 16) + (version[2] << 8) + version[3];
+  return 0;
 }
 
 int main() {
-  initialize();
   bool is_status_changed = false;
+  int time_from_last_update = 0;
+  
+  if (initialize() == -1) goto error;
   blink_led = 0;
   sw.mode(PullUp);
   as5600 = as5600;    // ??
   t.reset();
   memcpy((void *)&property, (void *)FLASH_ADDRESS, sizeof(property));
   property.FwVersion = (version[0] << 24) + (version[1] << 16) + (version[2] << 8) + version[3];
+  status.pulse_per_rotate = property.MCUTempLimit;
+  if (status.pulse_per_rotate <= 0) status.pulse_per_rotate = 2000.0f;
   rs485.baud(property.Baudrate);
   motor.servoOn();
   loop_timer.start();
-  int time_from_last_update = 0;
-  int num_encoder_read_error = 0;
+  position_read_timer.start();
   
   while(1){         // main loop
     status.led_count ++;
@@ -152,6 +159,9 @@ int main() {
         case B3M_SYSTEM_POSITION_CENTER:
           property.PositionCenterOffset = data;
           break;
+        case B3M_SYSTEM_MCU_TEMP_LIMIT:
+          property.MCUTempLimit = data;
+          break;
         case B3M_SYSTEM_DEADBAND_WIDTH:
           property.DeadBandWidth = data;
           break;
@@ -183,7 +193,10 @@ int main() {
           t.reset();
           status.is_servo_on = (data == 0) ? true : false;
           led3 = (status.is_servo_on) ? 1 : 0;
-          status.target_angle = as5600;
+          
+          status.initial_angle = status.target_angle = as5600;
+          if (as5600.getError()) break;
+          motor.resetHoleSensorCount();
           property.DesiredPosition = rad2deg100(status.target_angle);
           if (status.is_servo_on) t.start();
           break;
@@ -191,22 +204,19 @@ int main() {
     }
 
     property.PreviousPosition = property.CurrentPosition;
-    property.CurrentPosition = rad2deg100(as5600);
-    if (as5600.getError()){
-      led4 = 1;
-      num_encoder_read_error ++;
-      if (num_encoder_read_error >= 10) break;
-      as5600.resetError();
-    } else {
-      num_encoder_read_error = 0;
-    }
-    property.CurrentVelosity = property.CurrentVelosity * 0.9 + (property.CurrentPosition - property.PreviousPosition) / 0.001 * 0.1;
+    short current_position = rad2deg100(- 2.0 * M_PI * (double)motor.getHoleSensorCount() / status.pulse_per_rotate + status.initial_angle);
+    
+    property.CurrentPosition = current_position;
+    float period = position_read_timer.read();
+    position_read_timer.reset();
+    property.CurrentVelosity = property.CurrentVelosity * 0.9 + (property.CurrentPosition - property.PreviousPosition) / period * 0.1;
+    
     float error = deg100_2rad(property.CurrentPosition) - status.target_angle;
     while(error > M_PI) error -= 2.0 * M_PI;
     while(error < -M_PI) error += 2.0 * M_PI;
     status.err_i += error * 0.001f;
     status.err_i = max(min(status.err_i, 0.001f), -0.001f); 
-
+    
     float gain = property.Kp0 / 100.0f;
     float gain1 = property.Kp1 / 100.0f;
     float gain_d = property.Kd0 / 100.0f;
@@ -255,6 +265,7 @@ int main() {
     loop_timer.reset();
     loop_timer.start();
   }
+error:
   motor = 0;
   while(1){   // error mode
       blink_led = led2 = led3 = led4 = 1;

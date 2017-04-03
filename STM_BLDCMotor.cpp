@@ -26,7 +26,7 @@ int STM_BLDCMotor::switching_table[6] [3] = {
 STM_BLDCMotor::STM_BLDCMotor()
   :  uh_(MOTOR_UH), ul_(MOTOR_UL), vh_(MOTOR_VH), vl_(MOTOR_VL), wh_(MOTOR_WH), wl_(MOTOR_WL),
     hole1_(MOTOR_HOLE1), hole2_(MOTOR_HOLE2), hole3_(MOTOR_HOLE3),
-    max_ratio_(0.5), enable_(false)
+    max_ratio_(0.5), enable_(false), previous_hole_state_no(0), hole_sensor_count(0)
 {
   // hole‚ÌŠ„ž‚Ý‚Ì—Dæ‡ˆÊ‚ðã‚°‚é
   hole1_.mode(PullUp);
@@ -114,6 +114,12 @@ void STM_BLDCMotor::status_changed(void)
     case HOLE_STATE5:
       hole_state_no = 5; break;
   }
+  int diff = hole_state_no - previous_hole_state_no;
+  previous_hole_state_no = hole_state_no;
+  if (diff > 1) diff -= 6;
+  if (diff < -1) diff += 6;
+  hole_sensor_count += diff;
+  
   int next_state = (hole_state_no + dir + 6) % 6;
 
   if (enable_){
@@ -142,4 +148,20 @@ void STM_BLDCMotor::drive(int u, int v, int w)
   vl_ = (v == -1) ? 1 : 0;
   wh_ = (w == 1) ? val : 0.0;
   wl_ = (w == -1) ? 1 : 0;
+}
+
+/*!
+ * @brief get count value of hole sensor
+ */
+int STM_BLDCMotor::getHoleSensorCount()
+{
+  return hole_sensor_count;
+}
+
+/*!
+ * @brief reset count value of hole sensor
+ */
+void STM_BLDCMotor::resetHoleSensorCount()
+{
+  hole_sensor_count = 0;
 }

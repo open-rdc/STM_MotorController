@@ -50,6 +50,10 @@ public:
 
     void status_changed(void);
 
+    int getHoleSensorCount();
+
+    void resetHoleSensorCount();
+
 #ifdef MBED_OPERATORS
     /** A operator shorthand for write()
      */
@@ -88,6 +92,8 @@ private:
     bool enable_;
     int hole_state;
     int hole_state_no;
+    int previous_hole_state_no;
+    int hole_sensor_count;
 
     static int switching_table[6][3];
     void drive(int u, int v, int w);

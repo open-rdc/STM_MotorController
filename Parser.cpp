@@ -86,7 +86,7 @@ int Parser::setCommand(unsigned char *command_data, int command_data_len)
         int add = command_buf[length - 3];
         for(int i = 0; i < count; i ++){
           int index = 3 + i * len;
-          if (command_buf[index] != property.ID) continue;
+          if ((command_buf[3] != 0xff) && (command_buf[3] != property.ID)) continue;
           unsigned char *p = (unsigned char *)&command_buf[index + 1];
           for(int j = 0; j < (len - 1);){
             int address = add + j;
@@ -124,14 +124,14 @@ int Parser::setCommand(unsigned char *command_data, int command_data_len)
         reply[reply_byte - 1]  = 0;
         for(int i = 0; i < (reply_byte - 1); i ++) reply[reply_byte - 1] += reply[i];
       } else if (command == B3M_CMD_SAVE){
-        if (command_buf[3] != property.ID) break;
+        if ((command_buf[3] != 0xff) && (command_buf[3] != property.ID)) break;
         res = B3M_CMD_SAVE;
         reply_byte = 5;
         reply[0] = 5, reply[1] = 0x82, reply[2] = 0, reply[3] = property.ID;
         reply[4] = 0;
         for(int i = 0; i < 4; i ++) reply[4] += reply[i];
       } else if (command == B3M_CMD_LOAD){
-        if (command_buf[3] != property.ID) break;
+        if ((command_buf[3] != 0xff) && (command_buf[3] != property.ID)) break;
         res = B3M_CMD_LOAD;
         reply_byte = 5;
         reply[0] = 5, reply[1] = 0x81, reply[2] = 0, reply[3] = property.ID;
@@ -140,8 +140,10 @@ int Parser::setCommand(unsigned char *command_data, int command_data_len)
       } else if (command == B3M_CMD_RESET){
         res = B3M_CMD_RESET;
       } else if (command == B3M_CMD_DATA_STOCK){
+        if ((command_buf[3] != 0xff) && (command_buf[3] != property.ID)) break;
         res = B3M_CMD_DATA_STOCK;
       } else if (command == B3M_CMD_DATA_PLAY){
+        if (command_buf[3] != property.ID) break;
         res = B3M_CMD_DATA_PLAY;
       }
       break;

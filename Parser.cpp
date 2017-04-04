@@ -142,6 +142,7 @@ int Parser::setCommand(unsigned char *command_data, int command_data_len)
       } else if (command == B3M_CMD_DATA_STOCK){
         res = B3M_CMD_DATA_STOCK;
       } else if (command == B3M_CMD_DATA_PLAY){
+        if (command_buf[3] != property.ID) break;
         res = B3M_CMD_DATA_PLAY;
       }
       break;

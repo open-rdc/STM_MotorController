@@ -139,6 +139,10 @@ int Parser::setCommand(unsigned char *command_data, int command_data_len)
         for(int i = 0; i < 4; i ++) reply[4] += reply[i];
       } else if (command == B3M_CMD_RESET){
         res = B3M_CMD_RESET;
+      } else if (command == B3M_CMD_DATA_STOCK){
+        res = B3M_CMD_DATA_STOCK;
+      } else if (command == B3M_CMD_DATA_PLAY){
+        res = B3M_CMD_DATA_PLAY;
       }
       break;
     }

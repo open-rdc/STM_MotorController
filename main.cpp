@@ -1,5 +1,5 @@
 // version { year, month, day, no }
-char version[4] = { 17, 04, 03, 1 };
+char version[4] = { 17, 04, 04, 1 };
 
 #include "mbed.h"
 #include "AS5600.h"
@@ -47,6 +47,13 @@ int command_len = 0;
 const int LED_TOGGLE_COUNT = 500;
 unsigned char send_buf[256];
 unsigned char send_buf_len = 0;
+
+const int stocked_number = 1000;
+const int period_ms = 5;
+short stocked_target_position[stocked_number];
+short stocked_encoder_position[stocked_number];
+short stocked_motor_position[stocked_number];
+short stocked_pwm_duty[stocked_number];
 
 struct RobotStatus {
   float target_angle;
@@ -101,6 +108,8 @@ int initialize()
 int main() {
   bool is_status_changed = false;
   int time_from_last_update = 0;
+  int stocked_count = stocked_number;
+  int sub_count = period_ms;
   
   if (initialize() == -1) goto error;
   blink_led = 0;
@@ -137,10 +146,23 @@ int main() {
     } else if (command == B3M_CMD_LOAD){
       memcpy((void *)&property, (void *)FLASH_ADDRESS, sizeof(property));
     } else if (command == B3M_CMD_RESET){      
-      initialize();
-      led2 = led3 = led4 = 1;
-      wait(1);
-      led2 = led3 = led4 = 0;
+//      initialize();
+//      led2 = led3 = led4 = 1;
+//      wait(1);
+//      led2 = led3 = led4 = 0;
+      stocked_count = 0;  // temp
+    } else if (command == B3M_CMD_DATA_STOCK){
+      stocked_count = 0;
+    } else if (command == B3M_CMD_DATA_PLAY){
+      led4 = 1;
+      for(int i = 0; i < stocked_number; i ++){
+        while(!rs485.isEnableSend()) wait_us(1);
+        rs485.printf("%d, %d, %d, %d\r\n", 
+          stocked_target_position[i], stocked_encoder_position[i],
+          stocked_motor_position[i], stocked_pwm_duty[i]);
+        wait_ms(10);
+      }
+      led4 = 0;
     }
     
     int address, data;
@@ -171,6 +193,7 @@ int main() {
         case B3M_SERVO_DESIRED_POSITION:
           data = max(min(data, property.PositionMaxLimit), property.PositionMinLimit);
           status.target_angle = deg100_2rad(data)  + deg100_2rad(property.PositionCenterOffset);
+          property.DesiredPosition = rad2deg100(status.target_angle);
           is_status_changed = true;
           break;
         case B3M_CONTROL_KP0:
@@ -261,6 +284,24 @@ int main() {
       time_from_last_update = 0;
     }
     time_from_last_update ++;
+    
+    if (stocked_count < stocked_number){
+      sub_count --;
+      if (sub_count <= 0){
+        sub_count = period_ms;
+        float angle = as5600;
+        if (as5600.getError()) angle = 0;
+        stocked_target_position[stocked_count] = property.DesiredPosition - property.PositionCenterOffset;
+        stocked_encoder_position[stocked_count] = rad2deg100(angle) - property.PositionCenterOffset;
+        stocked_motor_position[stocked_count] = property.CurrentPosition - property.PositionCenterOffset;
+        stocked_pwm_duty[stocked_count] = property.PwmDuty;
+        stocked_count ++;
+        led4 = 1;
+      }
+    } else {
+      led4 = 0;
+    }
+    
     while(loop_timer.read_us() < 1000) wait_us(1);
     loop_timer.reset();
     loop_timer.start();

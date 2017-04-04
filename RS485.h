@@ -58,6 +58,7 @@ private:
   int p_read;
   int p_stock;
   Timer send_timer_, recv_timer_;
+  bool isUnderPrintString;
 };
 
 #endif

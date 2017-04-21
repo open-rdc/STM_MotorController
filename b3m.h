@@ -26,8 +26,8 @@
 #define B3M_CMD_WRITE					0x04
 #define B3M_CMD_POSITION		0x06
 #define B3M_CMD_RESET				0x05
-#define B3M_CMD_DATA_STOCK 0x06       // expansion
-#define B3M_CMD_DATA_PLAY    0x07       // expansion
+#define B3M_CMD_DATA_STOCK	0x06       // Extended Instruction
+#define B3M_CMD_DATA_PLAY			0x07       // Extended Instruction
 
 #define B3M_RETURN_ERROR_STATUS			0x00
 #define B3M_RETURN_SYSTEM_STATUS		0x01

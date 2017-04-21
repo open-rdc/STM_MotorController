@@ -146,11 +146,10 @@ int main() {
     } else if (command == B3M_CMD_LOAD){
       memcpy((void *)&property, (void *)FLASH_ADDRESS, sizeof(property));
     } else if (command == B3M_CMD_RESET){      
-//      initialize();
-//      led2 = led3 = led4 = 1;
-//      wait(1);
-//      led2 = led3 = led4 = 0;
-      stocked_count = 0;  // temp
+      initialize();
+      led2 = led3 = led4 = 1;
+      wait(1);
+      led2 = led3 = led4 = 0;
     } else if (command == B3M_CMD_DATA_STOCK){
       stocked_count = 0;
     } else if (command == B3M_CMD_DATA_PLAY){

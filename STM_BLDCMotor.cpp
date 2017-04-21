@@ -116,8 +116,8 @@ void STM_BLDCMotor::status_changed(void)
   }
   int diff = hole_state_no - previous_hole_state_no;
   previous_hole_state_no = hole_state_no;
-  if (diff > 1) diff -= 6;
-  if (diff < -1) diff += 6;
+  if (diff > 2) diff -= 6;
+  if (diff < -2) diff += 6;
   hole_sensor_count += diff;
   
   int next_state = (hole_state_no + dir + 6) % 6;

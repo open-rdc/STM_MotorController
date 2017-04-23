@@ -14,8 +14,12 @@ RS485::RS485(PinName tx, PinName rx, PinName selectOut) :
 }
 
 void RS485::baud(int baudrate){
+  serial_.attach(NULL, serial_.TxIrq);
+  serial_.attach(NULL, serial_.RxIrq);
   serial_.baud(baudrate);
   wait(0.001);
+  serial_.attach(this, &RS485::txFinishCallback, serial_.TxIrq);
+  serial_.attach(this, &RS485::rxFinishCallback, serial_.RxIrq);
 }
 
 void RS485::guardTime(int guard_time_us){

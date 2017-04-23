@@ -48,7 +48,7 @@ public:
   virtual ssize_t read(void* buffer, size_t length);
 
 private:
-  Serial serial_;
+  RawSerial serial_;
   DigitalOut select_out_;     // 0:input, 1:output
   int guard_time_us_;
   void txFinishCallback(void);

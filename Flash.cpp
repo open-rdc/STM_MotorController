@@ -12,9 +12,9 @@ bool Flash::write(uint32_t addr, uint8_t* dat, uint16_t size)
   if( r != HAL_OK ){
     return false;
   }
-  EraseInitStruct.TypeErase = TYPEERASE_PAGES;
-  EraseInitStruct.PageAddress = addr;
-  EraseInitStruct.NbPages = 1;
+  EraseInitStruct.TypeErase = FLASH_TYPEERASE_SECTORS;
+  EraseInitStruct.Sector = FLASH_SECTOR_4;
+  EraseInitStruct.NbSectors = 1;
   r = HAL_FLASHEx_Erase(&EraseInitStruct, &PageError);
   if ( r != HAL_OK )
   {

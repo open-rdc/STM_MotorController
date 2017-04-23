@@ -54,7 +54,7 @@ public:
 
     void resetHoleSensorCount();
 
-#ifdef MBED_OPERATORS
+//#ifdef MBED_OPERATORS
     /** A operator shorthand for write()
      */
     STM_BLDCMotor& operator= (float value) {
@@ -72,7 +72,7 @@ public:
     operator float() {
         return read();
     }
-#endif
+//#endif
 
 private:
     PwmOut uh_;

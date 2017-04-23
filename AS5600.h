@@ -4,7 +4,6 @@
 #define ASS5600_H
 
 #include "mbed.h"
-#include "AS5600.h"
 
 /** Class to measure angle using an absolute encoder AS5600
  *

@@ -5,6 +5,7 @@
 RS485::RS485(PinName tx, PinName rx, PinName selectOut) :
     serial_(tx, rx), select_out_(selectOut), guard_time_us_(200), p_read(0), p_stock(0), isUnderPrintString(false)
 {
+  serial_.baud(115200);
   select_out_ = 0;  // input
   serial_.format(8, Serial::None, 1);
   serial_.attach(this, &RS485::txFinishCallback, serial_.TxIrq);
@@ -56,7 +57,7 @@ int RS485::printf(const char* format, ...)
   
   va_list arg;
   va_start(arg, format);
-  int res = serial_.vprintf(format, arg);
+  int res = serial_.printf(format, arg);
   va_end(arg);  
   isUnderPrintString = false;
   return res;

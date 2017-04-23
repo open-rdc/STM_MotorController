@@ -12,7 +12,7 @@
  * #include "Flash.h" 
  * 
  * DigitalOut led1(LED1);
- * Flash flash(); 
+ * Flash flash;
  * 
  * int main() {
  *   uint8_t dat[2] = {'a', 'b'};
@@ -27,7 +27,7 @@
 class Flash
 {
 public:
-	Flash(){};
+  Flash(){};
 
   bool write(uint32_t addr, uint8_t* dat, uint16_t size);
 };

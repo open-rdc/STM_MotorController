@@ -121,7 +121,7 @@ int main() {
   status.pulse_per_rotate = property.MCUTempLimit;
   if (status.pulse_per_rotate <= 0) status.pulse_per_rotate = 2000.0f;
   rs485.baud(property.Baudrate);
-//  motor.servoOn();
+  motor.servoOn();
   loop_timer.start();
   position_read_timer.start();
   
@@ -217,6 +217,7 @@ int main() {
           led3 = (status.is_servo_on) ? 1 : 0;
           
           status.initial_angle = status.target_angle = as5600;
+//          if (as5600.getError())  goto error;
           if (as5600.getError()) break;
           motor.resetHoleSensorCount();
           property.DesiredPosition = rad2deg100(status.target_angle);
@@ -227,6 +228,9 @@ int main() {
 
     property.PreviousPosition = property.CurrentPosition;
     short current_position = rad2deg100(- 2.0 * M_PI * (double)motor.getHoleSensorCount() / status.pulse_per_rotate + status.initial_angle);
+//    float current_angle = as5600;
+//    if (!as5600.getError()){
+//    }
     
     property.CurrentPosition = current_position;
     float period = position_read_timer.read();

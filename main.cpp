@@ -1,5 +1,5 @@
 // version { year, month, day, no }
-char version[4] = { 17, 05, 27, 2 };
+char version[4] = { 17, 05, 27, 4 };
 
 #include "mbed.h"
 #include "AS5600.h"
@@ -79,10 +79,21 @@ float rad2deg100(float rad){
   return rad * 18000.0 / M_PI;
 }
 
+float limitPI(float angle){
+  while(angle < -M_PI) angle += (2 * M_PI);
+  while(angle > M_PI) angle -= (2 * M_PI);
+  return angle;
+}
+
 int initialize()
 {
-  status.initial_angle = status.target_angle = as5600;   // read angle
-  if (as5600.getError()) return -1;
+  for(int i = 0; i <= 10 ; i ++){
+    if (i == 10) return -1;
+    float angle = as5600;
+    if (as5600.getError()) continue;
+    status.initial_angle = status.target_angle = angle;   // read angle
+    break;
+  }
   status.is_servo_on = false;
   status.led_state = 0;
   status.led_count = 0;
@@ -138,6 +149,7 @@ int main() {
     command_len = rs485.read(command_data, MAX_COMMAND_LEN);
     int command = commnand_parser.setCommand(command_data, command_len);
     command_len = 0;
+    if (sw == 1) command = B3M_CMD_DATA_STOCK;
     
     if (command == B3M_CMD_WRITE){
       led2 = led2 ^ 1;
@@ -215,10 +227,14 @@ int main() {
           t.reset();
           status.is_servo_on = (data == 0) ? true : false;
           led3 = (status.is_servo_on) ? 1 : 0;
-          
-          status.initial_angle = status.target_angle = as5600;
-//          if (as5600.getError())  goto error;
-          if (as5600.getError()) break;
+        
+          for(int i = 0; i <= 10; i ++){
+            if (i == 10) goto error;
+            float angle = as5600;
+            if (as5600.getError()) continue;
+            status.initial_angle = status.target_angle = angle;
+            break;
+          }
           motor.resetHoleSensorCount();
           property.DesiredPosition = rad2deg100(status.target_angle);
           if (status.is_servo_on) t.start();
@@ -228,9 +244,10 @@ int main() {
 
     property.PreviousPosition = property.CurrentPosition;
     short current_position = rad2deg100(- 2.0 * M_PI * (double)motor.getHoleSensorCount() / status.pulse_per_rotate + status.initial_angle);
-//    float current_angle = as5600;
-//    if (!as5600.getError()){
-//    }
+    float current_angle = as5600;
+    if (!as5600.getError()){
+      status.initial_angle += limitPI(current_angle - deg100_2rad(property.CurrentPosition)) * 0.001;
+    }
     
     property.CurrentPosition = current_position;
     float period = position_read_timer.read();

@@ -1,5 +1,5 @@
 // version { year, month, day, no }
-char version[4] = { 17, 05, 27, 1 };
+char version[4] = { 17, 05, 27, 2 };
 
 #include "mbed.h"
 #include "AS5600.h"
@@ -121,7 +121,7 @@ int main() {
   status.pulse_per_rotate = property.MCUTempLimit;
   if (status.pulse_per_rotate <= 0) status.pulse_per_rotate = 2000.0f;
   rs485.baud(property.Baudrate);
-  motor.servoOn();
+//  motor.servoOn();
   loop_timer.start();
   position_read_timer.start();
   
@@ -146,10 +146,10 @@ int main() {
     } else if (command == B3M_CMD_LOAD){
       memcpy((void *)&property, (void *)FLASH_ADDRESS, sizeof(property));
     } else if (command == B3M_CMD_RESET){      
-      initialize();
-      led2 = led3 = led4 = 1;
-      wait(1);
-      led2 = led3 = led4 = 0;
+//      initialize();
+//      led2 = led3 = led4 = 1;
+//      wait(1);
+//      led2 = led3 = led4 = 0;
     } else if (command == B3M_CMD_DATA_STOCK){
       stocked_count = 0;
     } else if (command == B3M_CMD_DATA_PLAY){

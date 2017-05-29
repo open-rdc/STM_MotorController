@@ -1,0 +1,12 @@
+connect '/C=1 /BAUD=115200'
+callmenu 54010  ; [KanjiCode] Recv: Shift_JIS
+callmenu 54110  ; [KanjiCode] Send: Shift_JIS
+
+pause 1
+send $05$08$00$05$12
+pause 1
+send $09$04$00$05$F4$01$2A$01$32
+pause 1
+
+closett
+end

@@ -1,5 +1,5 @@
 // version { year, month, day, no }
-char version[4] = { 17, 05, 27, 4 };
+char version[4] = { 17, 06, 03, 1 };
 
 #include "mbed.h"
 #include "AS5600.h"
@@ -80,8 +80,8 @@ float rad2deg100(float rad){
 }
 
 float limitPI(float angle){
-  while(angle < -M_PI) angle += (2 * M_PI);
-  while(angle > M_PI) angle -= (2 * M_PI);
+  while(angle < -M_PI) angle += (2.0 * M_PI);
+  while(angle > M_PI) angle -= (2.0 * M_PI);
   return angle;
 }
 
@@ -243,12 +243,14 @@ int main() {
     }
 
     property.PreviousPosition = property.CurrentPosition;
-    short current_position = rad2deg100(- 2.0 * M_PI * (double)motor.getHoleSensorCount() / status.pulse_per_rotate + status.initial_angle);
-    float current_angle = as5600;
+
+    short current_position = rad2deg100(limitPI(- 2.0 * M_PI * (double)motor.getHoleSensorCount() / status.pulse_per_rotate + status.initial_angle));
+    float current_angle = limitPI(as5600);
     if (!as5600.getError()){
       status.initial_angle += limitPI(current_angle - deg100_2rad(property.CurrentPosition)) * 0.001;
     }
     
+//    short current_position = rad2deg100(as5600);
     property.CurrentPosition = current_position;
     float period = position_read_timer.read();
     position_read_timer.reset();

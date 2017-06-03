@@ -26,7 +26,7 @@ int STM_BLDCMotor::switching_table[6] [3] = {
 STM_BLDCMotor::STM_BLDCMotor()
   :  uh_(MOTOR_UH), ul_(MOTOR_UL), vh_(MOTOR_VH), vl_(MOTOR_VL), wh_(MOTOR_WH), wl_(MOTOR_WL),
     hole1_(MOTOR_HOLE1), hole2_(MOTOR_HOLE2), hole3_(MOTOR_HOLE3),
-    max_ratio_(1.0), enable_(false), previous_hole_state_no(0), hole_sensor_count(0)
+    max_ratio_(1.0), enable_(false), previous_hole_state_no(0), hole_sensor_count(0), prev_count_diff(0)
 {
   // hole‚ÌŠ„ž‚Ý‚Ì—Dæ‡ˆÊ‚ðã‚°‚é
   hole1_.mode(PullUp);
@@ -114,11 +114,15 @@ void STM_BLDCMotor::status_changed(void)
     case HOLE_STATE5:
       hole_state_no = 5; break;
   }
-  int diff = hole_state_no - previous_hole_state_no;
+  
+  int predict_hole_state_no = previous_hole_state_no + prev_count_diff;
+  int diff = hole_state_no - predict_hole_state_no;
+  while(diff > 2) diff -= 6;
+  while(diff < -2) diff += 6;
+  hole_sensor_count += (prev_count_diff + diff);
   previous_hole_state_no = hole_state_no;
-  if (diff > 2) diff -= 6;
-  if (diff < -2) diff += 6;
-  hole_sensor_count += diff;
+  prev_count_diff = 0;
+//  prev_count_diff += diff;
   
   int next_state = (hole_state_no + dir + 6) % 6;
 

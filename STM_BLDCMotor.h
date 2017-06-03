@@ -94,6 +94,7 @@ private:
     int hole_state_no;
     int previous_hole_state_no;
     int hole_sensor_count;
+    int prev_count_diff;
 
     static int switching_table[6][3];
     void drive(int u, int v, int w);

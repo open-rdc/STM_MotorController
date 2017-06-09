@@ -249,6 +249,7 @@ int main() {
     property.PreviousPosition = property.CurrentPosition;
 
     short current_position = rad2deg100(limitPI(- 2.0 * M_PI * (double)motor.getHoleSensorCount() / status.pulse_per_rotate + status.initial_angle));
+    property.CurrentPosition = current_position;
     float current_angle = limitPI(as5600);
     if (!as5600.getError()){
       if (fabs(limitPI(current_angle - deg100_2rad(property.CurrentPosition))) > 0.35){   // 20度以上差があれば，強制的にロータリエンコーダの値を利用
@@ -259,7 +260,6 @@ int main() {
     }
     
 //    short current_position = rad2deg100(as5600);
-    property.CurrentPosition = current_position;
     float period = position_read_timer.read();
     position_read_timer.reset();
     property.CurrentVelosity = property.CurrentVelosity * 0.9 + (property.CurrentPosition - property.PreviousPosition) / period * 0.1;

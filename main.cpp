@@ -250,8 +250,12 @@ int main() {
 
     short current_position = rad2deg100(limitPI(- 2.0 * M_PI * (double)motor.getHoleSensorCount() / status.pulse_per_rotate + status.initial_angle));
     float current_angle = limitPI(as5600);
-    if (!as5600.getError() && status.auto_calibration){
-      status.initial_angle += limitPI(current_angle - deg100_2rad(property.CurrentPosition)) * 0.001;
+    if (!as5600.getError()){
+      if (fabs(current_angle - deg100_2rad(property.CurrentPosition)) > 0.35){   // 20度以上差があれば，強制的にロータリエンコーダの値を利用
+        status.initial_angle += limitPI(current_angle - deg100_2rad(property.CurrentPosition));
+      } else if (status.auto_calibration){
+        status.initial_angle += limitPI(current_angle - deg100_2rad(property.CurrentPosition)) * 0.001;
+      }
     }
     
 //    short current_position = rad2deg100(as5600);

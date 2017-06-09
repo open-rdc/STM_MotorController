@@ -65,6 +65,7 @@ struct RobotStatus {
   int led_count;
   float err_i;
   int pulse_per_rotate;
+  bool auto_calibration;
 } status;
 
 float deg100_2rad(float deg){
@@ -100,6 +101,7 @@ int initialize()
   status.change_target = false;
   status.isWakeupMode = false;
   status.err_i = 0.0;
+  status.auto_calibration = true;
   
   memset((void *)&property, 0, sizeof(property));
   property.ID = 0;
@@ -174,6 +176,8 @@ int main() {
         wait_ms(10);
       }
       led4 = 0;
+    } else if (command == B3M_CMD_AUTO_CALIBRATION){
+      status.auto_calibration = false;
     }
     
     int address, data;
@@ -246,7 +250,7 @@ int main() {
 
     short current_position = rad2deg100(limitPI(- 2.0 * M_PI * (double)motor.getHoleSensorCount() / status.pulse_per_rotate + status.initial_angle));
     float current_angle = limitPI(as5600);
-    if (!as5600.getError()){
+    if (!as5600.getError() && status.auto_calibration){
       status.initial_angle += limitPI(current_angle - deg100_2rad(property.CurrentPosition)) * 0.001;
     }
     

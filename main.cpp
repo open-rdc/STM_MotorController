@@ -124,10 +124,10 @@ int main() {
   int stocked_count = stocked_number;
   int sub_count = period_ms;
   
+  as5600 = as5600;    // ??
   if (initialize() == -1) goto error;
   blink_led = 0;
   sw.mode(PullUp);
-  as5600 = as5600;    // ??
   t.reset();
   memcpy((void *)&property, (void *)FLASH_ADDRESS, sizeof(property));
   property.FwVersion = (version[0] << 24) + (version[1] << 16) + (version[2] << 8) + version[3];
@@ -251,7 +251,7 @@ int main() {
     short current_position = rad2deg100(limitPI(- 2.0 * M_PI * (double)motor.getHoleSensorCount() / status.pulse_per_rotate + status.initial_angle));
     float current_angle = limitPI(as5600);
     if (!as5600.getError()){
-      if (fabs(current_angle - deg100_2rad(property.CurrentPosition)) > 0.35){   // 20度以上差があれば，強制的にロータリエンコーダの値を利用
+      if (fabs(limitPI(current_angle - deg100_2rad(property.CurrentPosition))) > 0.35){   // 20度以上差があれば，強制的にロータリエンコーダの値を利用
         status.initial_angle += limitPI(current_angle - deg100_2rad(property.CurrentPosition));
       } else if (status.auto_calibration){
         status.initial_angle += limitPI(current_angle - deg100_2rad(property.CurrentPosition)) * 0.001;

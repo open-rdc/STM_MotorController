@@ -1,0 +1,14 @@
+connect '/C=1 /BAUD=115200'
+callmenu 54010  ; [KanjiCode] Recv: Shift_JIS
+callmenu 54110  ; [KanjiCode] Send: Shift_JIS
+
+getdir DIR
+changedir DIR
+
+pause 1
+logopen 'joint1.csv' 1 0
+send $05$09$00$01$0F
+
+pause 20
+closett
+end

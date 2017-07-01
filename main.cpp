@@ -1,5 +1,5 @@
 // version { year, month, day, no }
-char version[4] = { 17, 6, 9, 1 };
+char version[4] = { 17, 7, 1, 1 };
 
 #include "mbed.h"
 #include "AS5600.h"
@@ -137,7 +137,7 @@ int main() {
   motor.servoOn();
   loop_timer.start();
   position_read_timer.start();
-  
+  int num_encoder_read_error = 0;  
   while(1){         // main loop
     status.led_count ++;
     if (status.led_count > LED_TOGGLE_COUNT){
@@ -248,6 +248,18 @@ int main() {
 
     property.PreviousPosition = property.CurrentPosition;
 
+    short current_position = rad2deg100(as5600);
+    if (as5600.getError()){
+      led4 = 1;
+      num_encoder_read_error ++;
+      if (num_encoder_read_error >= 10) break;
+      as5600.resetError();
+    } else {
+      property.CurrentPosition = current_position;
+      num_encoder_read_error = 0;
+    }
+
+/*
     short current_position = rad2deg100(limitPI(- 2.0 * M_PI * (double)motor.getHoleSensorCount() / status.pulse_per_rotate + status.initial_angle));
     property.CurrentPosition = current_position;
     float current_angle = limitPI(as5600);
@@ -260,6 +272,7 @@ int main() {
     }
     
 //    short current_position = rad2deg100(as5600);
+*/
     float period = position_read_timer.read();
     position_read_timer.reset();
     property.CurrentVelosity = property.CurrentVelosity * 0.9 + (property.CurrentPosition - property.PreviousPosition) / period * 0.1;

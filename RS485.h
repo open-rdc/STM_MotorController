@@ -48,7 +48,7 @@ public:
   virtual ssize_t read(void* buffer, size_t length);
 
 private:
-  RawSerial serial_;
+  Serial serial_;
   DigitalOut select_out_;     // 0:input, 1:output
   int guard_time_us_;
   void txFinishCallback(void);
@@ -58,7 +58,6 @@ private:
   int p_read;
   int p_stock;
   Timer send_timer_, recv_timer_;
-  bool isUnderPrintString;
 };
 
 #endif

@@ -3,7 +3,7 @@
 #include <stdarg.h>
 
 RS485::RS485(PinName tx, PinName rx, PinName selectOut) :
-    serial_(tx, rx), select_out_(selectOut), guard_time_us_(200), p_read(0), p_stock(0), isUnderPrintString(false)
+    serial_(tx, rx), select_out_(selectOut), guard_time_us_(200), p_read(0), p_stock(0)
 {
   serial_.baud(115200);
   select_out_ = 0;  // input
@@ -52,28 +52,27 @@ int RS485::getc()
 
 int RS485::printf(const char* format, ...)
 {
-  select_out_ = 1;
-  isUnderPrintString = true;
-  
+	char str[256];
   va_list arg;
   va_start(arg, format);
-  int res = serial_.printf(format, arg);
-  va_end(arg);  
-  isUnderPrintString = false;
-  return res;
+  vsprintf(str, format, arg);
+  va_end(arg);
+  write(str, strlen(str));
+  return 0;
 }
 
 void RS485::txFinishCallback(void)
 {
   send_timer_.reset();
   send_timer_.start();
-  if (!isUnderPrintString) select_out_ = 0;
+  select_out_ = 0;
 }
 
 ssize_t RS485::write(const void* buffer, size_t length)
 {
   char *buf = (char *)buffer;
   for(int i = 0; i < length; i ++){
+    select_out_ = 1;
     serial_.putc((int)*buf++);
   }
   

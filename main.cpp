@@ -68,15 +68,15 @@ struct RobotStatus {
 } status;
 
 float deg100_2rad(float deg){
-  return deg * M_PI / 18000.0;
+  return deg * M_PI / 18000.0f;
 }
 
 float deg2rad(float deg){
-  return deg * M_PI / 180.0;
+  return deg * M_PI / 180.0f;
 }
 
 float rad2deg100(float rad){
-  return rad * 18000.0 / M_PI;
+  return rad * 18000.0f / M_PI;
 }
 
 int initialize()
@@ -114,7 +114,6 @@ int main() {
   if (initialize() == -1) goto error;
   blink_led = 0;
   sw.mode(PullUp);
-  as5600 = as5600;    // ??
   t.reset();
   memcpy((void *)&property, (void *)FLASH_ADDRESS, sizeof(property));
   property.FwVersion = (version[0] << 24) + (version[1] << 16) + (version[2] << 8) + version[3];
@@ -231,11 +230,11 @@ int main() {
     property.CurrentPosition = current_position;
     float period = position_read_timer.read();
     position_read_timer.reset();
-    property.CurrentVelosity = property.CurrentVelosity * 0.9 + (property.CurrentPosition - property.PreviousPosition) / period * 0.1;
+    property.CurrentVelosity = property.CurrentVelosity * 0.9f + (property.CurrentPosition - property.PreviousPosition) / period * 0.1f;
     
     float error = deg100_2rad(property.CurrentPosition) - status.target_angle;
-    while(error > M_PI) error -= 2.0 * M_PI;
-    while(error < -M_PI) error += 2.0 * M_PI;
+    while(error > M_PI) error -= 2.0f * M_PI;
+    while(error < -M_PI) error += 2.0f * M_PI;
     status.err_i += error * 0.001f;
     status.err_i = max(min(status.err_i, 0.001f), -0.001f); 
     
@@ -261,7 +260,7 @@ int main() {
     
     float max_torque = property.TorqueLimit / 100.0f;
     float val = max(min(pwm, max_torque), -max_torque);
-    if (status.isWakeupMode) val *= 0.3;
+    if (status.isWakeupMode) val *= 0.3f;
     
     if (status.is_servo_on) motor = val;
     else motor = 0;

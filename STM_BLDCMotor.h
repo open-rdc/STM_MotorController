@@ -4,6 +4,7 @@
 #define STM_BLDCMOTOR_H
 
 #include "mbed.h"
+#include "AS5600.h" 
 
 /** Class to control a motor on any pin, without using pwm pin
  *
@@ -85,6 +86,8 @@ private:
     InterruptIn hole1_;
     InterruptIn hole2_;
     InterruptIn hole3_;
+
+    AS5600 as5600_;
 
     double value_;
     double period_sec_;

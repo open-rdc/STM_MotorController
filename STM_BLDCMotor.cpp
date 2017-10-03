@@ -26,9 +26,11 @@ int STM_BLDCMotor::switching_table[6] [3] = {
 STM_BLDCMotor::STM_BLDCMotor()
   :  uh_(MOTOR_UH), ul_(MOTOR_UL), vh_(MOTOR_VH), vl_(MOTOR_VL), wh_(MOTOR_WH), wl_(MOTOR_WL),
     hole1_(MOTOR_HOLE1), hole2_(MOTOR_HOLE2), hole3_(MOTOR_HOLE3),
-    max_ratio_(0.5), enable_(false), previous_hole_state_no(0), hole_sensor_count(0)
+    max_ratio_(0.5), enable_(false), previous_hole_state_no(0), hole_sensor_count(0), 
+    as5600_(I2C_SDA, I2C_SCL)
 {
   // holeÇÃäÑçûÇ›ÇÃóDêÊèáà Çè„Ç∞ÇÈ
+  /*
   hole1_.mode(PullUp);
   hole2_.mode(PullUp);
   hole3_.mode(PullUp);
@@ -38,7 +40,7 @@ STM_BLDCMotor::STM_BLDCMotor()
   hole2_.fall(this, &STM_BLDCMotor::status_changed);
   hole3_.rise(this, &STM_BLDCMotor::status_changed);
   hole3_.fall(this, &STM_BLDCMotor::status_changed);
-  
+  */
   setPwmPeriod(1.0 / PWM_FREQUENCY);
   ul_ = uh_ = vl_ = vh_ = wl_ = wh_ = 0;
   
@@ -57,7 +59,7 @@ void STM_BLDCMotor::servoOff(void)
 
 void STM_BLDCMotor::setMaxDutyRatio(float max_ratio)
 {
-  max_ratio_ = max(min(max_ratio, 1.0), 0.0);
+  max_ratio_ = max(min(max_ratio, 1.0f), 0.0f);
 }
 
 void STM_BLDCMotor::setPwmPeriod(double seconds)
@@ -71,6 +73,7 @@ void STM_BLDCMotor::setPwmPeriod(double seconds)
 void STM_BLDCMotor::write(double value)
 {
   value_ = max(min(value, max_ratio_), -max_ratio_);
+	status_changed();
 }
 
 float STM_BLDCMotor::read()
@@ -80,13 +83,38 @@ float STM_BLDCMotor::read()
 
 int STM_BLDCMotor::getHoleState()
 {
+	static double hole_angle[] = {
+		3.068711, 2.917832333, 2.760306, 2.596640667, 2.48361, 2.313296667,
+		2.153212333, 2.020234667, 1.857592667, 1.705180333, 1.542538333, 1.437691,
+		1.251522333, 1.108827667, 0.964087, 0.808605333, 0.655169667, 0.498154,
+    0.381031667, 0.209183667, 0.049610667, -0.083366333, -0.241916667, -0.389215,
+		-0.553901667,  -0.657726667, -0.837246667, -0.988124333, -1.129285333, -1.278118,
+		-1.439736667, -1.597264, -1.707225667, -1.885723, -2.038135333, -2.169578667,
+		-2.327105667, -2.469800667, -2.632953667, -2.744450333, -2.917321333, -3.061039
+	};
+	float angle = as5600_;
+	float min_val = 1.0f;
+	int min_no = 0;
+	for(int i = 0; i < 42; i ++) {
+		float val = fabs(hole_angle[i] - angle);
+		if (val < -3.14159*2.0) val =+ 3.14159*2.0;
+		if (val > 3.14159*2.0) val =- 3.14159*2.0;
+		if (val < min_val){
+			min_val = val;
+			min_no = i;
+		}
+	}
+	hole_state_no = min_no % 6;
+	
+  /*
   int h1 = hole1_;
   int h2 = hole2_;
   int h3 = hole3_;
   
   hole_state = (h3 << 2) + (h2 << 1) + h1;
+  */
 
-  return hole_state;
+  return hole_state_no;
 }
 
 int STM_BLDCMotor::getState()
@@ -100,6 +128,7 @@ void STM_BLDCMotor::status_changed(void)
   int dir = (value_ >= 0.0) ? 1 : -2;
   
   getHoleState();
+  /*
   switch(hole_state){
     case HOLE_STATE0:
       hole_state_no = 0; break;
@@ -114,6 +143,7 @@ void STM_BLDCMotor::status_changed(void)
     case HOLE_STATE5:
       hole_state_no = 5; break;
   }
+  */
   int diff = hole_state_no - previous_hole_state_no;
   previous_hole_state_no = hole_state_no;
   if (diff > 2) diff -= 6;

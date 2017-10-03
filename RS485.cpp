@@ -8,18 +8,15 @@ RS485::RS485(PinName tx, PinName rx, PinName selectOut) :
   serial_.baud(115200);
   select_out_ = 0;  // input
   serial_.format(8, Serial::None, 1);
-  serial_.attach(this, &RS485::txFinishCallback, serial_.TxIrq);
-  serial_.attach(this, &RS485::rxFinishCallback, serial_.RxIrq);
   recv_timer_.start();
   send_timer_.start();
+  serial_.attach(this, &RS485::rxFinishCallback, serial_.RxIrq);
 }
 
 void RS485::baud(int baudrate){
-  serial_.attach(NULL, serial_.TxIrq);
   serial_.attach(NULL, serial_.RxIrq);
   serial_.baud(baudrate);
   wait(0.001);
-  serial_.attach(this, &RS485::txFinishCallback, serial_.TxIrq);
   serial_.attach(this, &RS485::rxFinishCallback, serial_.RxIrq);
 }
 
@@ -40,6 +37,7 @@ bool RS485::isEnableSend()
 
 int RS485::putc(int c)
 {
+  serial_.attach(this, &RS485::txFinishCallback, serial_.TxIrq);
   select_out_ = 1;
   return serial_.putc(c);
 }
@@ -52,7 +50,7 @@ int RS485::getc()
 
 int RS485::printf(const char* format, ...)
 {
-	char str[256];
+  char str[256];
   va_list arg;
   va_start(arg, format);
   vsprintf(str, format, arg);
@@ -63,6 +61,7 @@ int RS485::printf(const char* format, ...)
 
 void RS485::txFinishCallback(void)
 {
+  serial_.attach(NULL, serial_.TxIrq);
   send_timer_.reset();
   send_timer_.start();
   select_out_ = 0;

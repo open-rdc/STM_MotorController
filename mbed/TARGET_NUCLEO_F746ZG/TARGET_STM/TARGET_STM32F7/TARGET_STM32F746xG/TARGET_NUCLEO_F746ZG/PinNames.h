@@ -233,14 +233,10 @@ typedef enum {
     USB_OTG_HS_ULPI_DIR = PC_2,
     USB_OTG_HS_ULPI_NXT = PC_3,
 		
-		RS485_SELECT = PA_8,
-		RS485_TX = PA_9,
-		RS485_RX = PA_10,
+    RS485_SELECT = PA_8,
+    RS485_TX = PA_9,
+    RS485_RX = PA_10,
 		
-    MOTOR_HOLE1 = PB_13,
-    MOTOR_HOLE2 = PB_14,
-    MOTOR_HOLE3 = PB_15,
-
     MOTOR_UL = PA_1,
     MOTOR_VL = PA_2,
     MOTOR_WL = PA_3,
@@ -248,7 +244,7 @@ typedef enum {
     MOTOR_VH = PD_13,
     MOTOR_WH = PD_14,
     
-		U_A = PC_0, 
+    U_A = PC_0, 
     V_A = PC_1,
     W_A = PC_2,
 

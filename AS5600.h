@@ -63,6 +63,7 @@ private:
   float angle;
   float angle0;
   int error;
+  bool is_first;
 };
 
 #endif

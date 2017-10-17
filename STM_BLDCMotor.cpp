@@ -13,6 +13,7 @@
 
 #define MIN_PWM 0.10
 #define PWM_FREQUENCY 20000.0
+#define SAMPLING_TIME 0.0001
 
 int STM_BLDCMotor::switching_table[6] [3] = {
     { 0, -1, 1 }, // STATE1
@@ -25,22 +26,9 @@ int STM_BLDCMotor::switching_table[6] [3] = {
 
 STM_BLDCMotor::STM_BLDCMotor()
   :  uh_(MOTOR_UH), ul_(MOTOR_UL), vh_(MOTOR_VH), vl_(MOTOR_VL), wh_(MOTOR_WH), wl_(MOTOR_WL),
-    hole1_(MOTOR_HOLE1), hole2_(MOTOR_HOLE2), hole3_(MOTOR_HOLE3),
-    max_ratio_(0.5), enable_(false), previous_hole_state_no(0), hole_sensor_count(0), 
-    as5600_(I2C_SDA, I2C_SCL)
+    st_(), max_ratio_(0.5), enable_(false), as5600_(I2C_SDA, I2C_SCL)
 {
-  // holeÇÃäÑçûÇ›ÇÃóDêÊèáà Çè„Ç∞ÇÈ
-  /*
-  hole1_.mode(PullUp);
-  hole2_.mode(PullUp);
-  hole3_.mode(PullUp);
-  hole1_.rise(this, &STM_BLDCMotor::status_changed);
-  hole1_.fall(this, &STM_BLDCMotor::status_changed);
-  hole2_.rise(this, &STM_BLDCMotor::status_changed);
-  hole2_.fall(this, &STM_BLDCMotor::status_changed);
-  hole3_.rise(this, &STM_BLDCMotor::status_changed);
-  hole3_.fall(this, &STM_BLDCMotor::status_changed);
-  */
+  st_.attach(callback(this, &STM_BLDCMotor::status_changed), SAMPLING_TIME);
   setPwmPeriod(1.0 / PWM_FREQUENCY);
   ul_ = uh_ = vl_ = vh_ = wl_ = wh_ = 0;
   
@@ -73,7 +61,6 @@ void STM_BLDCMotor::setPwmPeriod(double seconds)
 void STM_BLDCMotor::write(double value)
 {
   value_ = max(min(value, max_ratio_), -max_ratio_);
-	status_changed();
 }
 
 float STM_BLDCMotor::read()
@@ -106,14 +93,6 @@ int STM_BLDCMotor::getHoleState()
 	}
 	hole_state_no = min_no % 6;
 	
-  /*
-  int h1 = hole1_;
-  int h2 = hole2_;
-  int h3 = hole3_;
-  
-  hole_state = (h3 << 2) + (h2 << 1) + h1;
-  */
-
   return hole_state_no;
 }
 
@@ -128,28 +107,6 @@ void STM_BLDCMotor::status_changed(void)
   int dir = (value_ >= 0.0) ? 1 : -2;
   
   getHoleState();
-  /*
-  switch(hole_state){
-    case HOLE_STATE0:
-      hole_state_no = 0; break;
-    case HOLE_STATE1:
-      hole_state_no = 1; break;
-    case HOLE_STATE2:
-      hole_state_no = 2; break;
-    case HOLE_STATE3:
-      hole_state_no = 3; break;
-    case HOLE_STATE4:
-      hole_state_no = 4; break;
-    case HOLE_STATE5:
-      hole_state_no = 5; break;
-  }
-  */
-  int diff = hole_state_no - previous_hole_state_no;
-  previous_hole_state_no = hole_state_no;
-  if (diff > 2) diff -= 6;
-  if (diff < -2) diff += 6;
-  hole_sensor_count += diff;
-  
   int next_state = (hole_state_no + dir + 6) % 6;
 
   if (enable_){
@@ -159,6 +116,7 @@ void STM_BLDCMotor::status_changed(void)
   } else {
     drive(0, 0, 0);
   }
+	st_.attach(callback(this, &STM_BLDCMotor::status_changed), SAMPLING_TIME);
 }
 
 /*!
@@ -178,20 +136,4 @@ void STM_BLDCMotor::drive(int u, int v, int w)
   vl_ = (v == -1) ? 1 : 0;
   wh_ = (w == 1) ? val : 0.0;
   wl_ = (w == -1) ? 1 : 0;
-}
-
-/*!
- * @brief get count value of hole sensor
- */
-int STM_BLDCMotor::getHoleSensorCount()
-{
-  return hole_sensor_count;
-}
-
-/*!
- * @brief reset count value of hole sensor
- */
-void STM_BLDCMotor::resetHoleSensorCount()
-{
-  hole_sensor_count = 0;
 }

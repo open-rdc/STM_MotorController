@@ -51,8 +51,6 @@ public:
 
     void status_changed(void);
 
-    int getHoleSensorCount();
-
     void resetHoleSensorCount();
 
 //#ifdef MBED_OPERATORS
@@ -82,21 +80,15 @@ private:
     DigitalOut vl_;
     PwmOut wh_;
     DigitalOut wl_;
-    
-    InterruptIn hole1_;
-    InterruptIn hole2_;
-    InterruptIn hole3_;
-
-    AS5600 as5600_;
+    Timeout st_;
 
     double value_;
     double period_sec_;
     double max_ratio_;
     bool enable_;
-    int hole_state;
     int hole_state_no;
-    int previous_hole_state_no;
-    int hole_sensor_count;
+
+    AS5600 as5600_;
 
     static int switching_table[6][3];
     void drive(int u, int v, int w);

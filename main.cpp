@@ -119,6 +119,12 @@ int initialize()
 }
 
 int main() {
+	float MAX_SPEED = 6.0;
+	float MAX_ACCELERATION = 12.0;
+	float current_speed = 0.0;
+	float current_acceleration = 0.0;
+	float current_target_angle = 0.0;
+	
   bool is_status_changed = false;
   int time_from_last_update = 0;
   int stocked_count = stocked_number;
@@ -236,7 +242,7 @@ int main() {
             if (i == 10) goto error;
             float angle = as5600;
             if (as5600.getError()) continue;
-            status.initial_angle = status.target_angle = angle;
+            status.initial_angle = status.target_angle = current_target_angle = angle;
             break;
           }
           motor.resetHoleSensorCount();
@@ -277,9 +283,23 @@ int main() {
     position_read_timer.reset();
     property.CurrentVelosity = property.CurrentVelosity * 0.9 + (property.CurrentPosition - property.PreviousPosition) / period * 0.1;
     
-    float error = deg100_2rad(property.CurrentPosition) - status.target_angle;
+    float error = status.target_angle - current_target_angle;
     while(error > M_PI) error -= 2.0 * M_PI;
     while(error < -M_PI) error += 2.0 * M_PI;
+		
+    current_acceleration = (error > 0) ? MAX_ACCELERATION : -MAX_ACCELERATION;
+    current_speed += current_acceleration * period;
+    double abs_speed = fabs(current_speed);
+    abs_speed = min(min(abs_speed, sqrt(2.0*fabs(error)*MAX_ACCELERATION)), MAX_SPEED);
+    current_speed = (current_speed > 0) ? abs_speed : -abs_speed;
+		
+    current_target_angle += current_speed * period;
+    property.PreviousVelosity = rad2deg100(current_target_angle);
+		
+    error = deg100_2rad(property.CurrentPosition) - current_target_angle;
+    while(error > M_PI) error -= 2.0 * M_PI;
+    while(error < -M_PI) error += 2.0 * M_PI;
+		
     status.err_i += error * 0.001f;
     status.err_i = max(min(status.err_i, 0.001f), -0.001f); 
     

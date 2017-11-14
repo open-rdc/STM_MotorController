@@ -22,6 +22,7 @@ void AS5600::updateAngle()
   if (error == 0) angle = ((out[0] << 8) + out[1]) * 0.087912087f * M_PI / 180.0f - angle0;
   while (angle > M_PI) angle -= 2.0f * M_PI;
   while (angle < -M_PI) angle += 2.0f * M_PI;
+  angle = -angle;
 }
 
 float AS5600::getAngleRad()

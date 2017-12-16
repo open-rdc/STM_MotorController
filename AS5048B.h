@@ -16,15 +16,15 @@
  *
  * BusOut led(LED1, LED2, LED3, LED4);
  * BusIn sw(SW1, SW2);
- * AS5048B as5600(I2C_SDA, I2C_SCL);
+ * AS5048B as5048b(I2C_SDA, I2C_SCL);
  * 
  * int main() {
  *   led = 0;
  *   sw.mode(PullUp);
  *   while(1) {
- *     float angle = as5600;
+ *     float angle = as5048b;
  *     printf("%f\r\n", angle);
- *     if (sw[0] == 0) as5600 = 0;
+ *     if (sw[0] == 0) as5048b = 0;
  *     wait(0.5);
  *   }
  * }

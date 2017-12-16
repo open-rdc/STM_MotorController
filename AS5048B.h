@@ -1,10 +1,9 @@
 // Chiba Institute of Technology
 
-#ifndef ASS5600_H
-#define ASS5600_H
+#ifndef ASS5048B_H
+#define ASS5048B_H
 
 #include "mbed.h"
-#include "AS5048B.h"
 
 /** Class to measure angle using an absolute encoder AS5048B
  *

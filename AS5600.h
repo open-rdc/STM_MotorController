@@ -1,7 +1,7 @@
 // Chiba Institute of Technology
 
-#ifndef ASS5600_H
-#define ASS5600_H
+#ifndef AS5600_H
+#define AS5600_H
 
 #include "mbed.h"
 
@@ -45,7 +45,7 @@ public:
 
   void resetError();
 
-void write(float value);
+  void write(float value);
 
   float read();
 

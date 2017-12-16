@@ -1,8 +1,15 @@
 // version { year, month, day, no }
-char version[4] = { 17, 04, 23, 1 };
+char version[4] = { 17, 12, 14, 1 };
+//#define AS5048B
 
 #include "mbed.h"
+
+#ifdef AS5048B
+#include "AS5048B.h"
+#else
 #include "AS5600.h"
+#endif
+
 #include "RS485.h"
 #include "Parser.h"
 #include "STM_BLDCMotor.h"
@@ -35,11 +42,16 @@ DigitalOut led3(LED3);        // servo on
 DigitalOut led4(LED4);        // no assign
 BusIn sw(SW1, SW2);
 STM_BLDCMotor motor;
-AS5600 as5600(I2C_SDA, I2C_SCL);
 RS485 rs485(RS485_TX, RS485_RX, RS485_SELECT);
 Parser commnand_parser;
 Flash flash;
 Timer t, loop_timer, position_read_timer;
+
+#ifdef  AS5048B
+AS5048B angle_sensor(I2C_SDA, I2C_SCL);
+#else
+AS5600 angle_sensor(I2C_SDA, I2C_SCL);
+#endif
 
 const int MAX_COMMAND_LEN = 256; 
 unsigned char command_data[MAX_COMMAND_LEN];
@@ -81,8 +93,8 @@ float rad2deg100(float rad){
 
 int initialize()
 {
-  status.initial_angle = status.target_angle = as5600;   // read angle
-  if (as5600.getError()) return -1;
+  status.initial_angle = status.target_angle = angle_sensor;   // read angle
+  if (angle_sensor.getError()) return -1;
   status.is_servo_on = false;
   status.led_state = 0;
   status.led_count = 0;
@@ -215,8 +227,8 @@ int main() {
           status.is_servo_on = (data == 0) ? true : false;
           led3 = (status.is_servo_on) ? 1 : 0;
           
-          status.initial_angle = status.target_angle = as5600;
-          if (as5600.getError()) break;
+          status.initial_angle = status.target_angle = angle_sensor;
+          if (angle_sensor.getError()) break;
           motor.resetHoleSensorCount();
           property.DesiredPosition = rad2deg100(status.target_angle);
           if (status.is_servo_on) t.start();
@@ -287,8 +299,8 @@ int main() {
       sub_count --;
       if (sub_count <= 0){
         sub_count = period_ms;
-        float angle = as5600;
-        if (as5600.getError()) angle = 0;
+        float angle = angle_sensor;
+        if (angle_sensor.getError()) angle = 0;
         stocked_target_position[stocked_count] = property.DesiredPosition - property.PositionCenterOffset;
         stocked_encoder_position[stocked_count] = rad2deg100(angle) - property.PositionCenterOffset;
         stocked_motor_position[stocked_count] = property.CurrentPosition - property.PositionCenterOffset;

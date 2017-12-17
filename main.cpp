@@ -1,5 +1,5 @@
 // version { year, month, day, no }
-char version[4] = { 17, 7, 1, 1 };
+char version[4] = { 17, 12, 17, 1 };
 
 #include "mbed.h"
 #include "AS5600.h"

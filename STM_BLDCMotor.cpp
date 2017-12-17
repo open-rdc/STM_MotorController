@@ -15,12 +15,12 @@
 #define PWM_FREQUENCY 20000.0
 
 int STM_BLDCMotor::switching_table[6] [3] = {
-    { 0, -1, 1 }, // STATE1
-    { 1, -1, 0 }, // STATE2
-    { 1, 0, -1 }, // STATE3
-    { 0, 1, -1 }, // STATE4
-    { -1, 1, 0 }, // STATE5
-    { -1, 0, 1 }, // STATE6
+    { -1, -1, 1 }, // STATE1
+    { 1, -1, 1 }, // STATE2
+    { 1, -1, -1 }, // STATE3
+    { 1, 1, -1 }, // STATE4
+    { -1, 1, -1 }, // STATE5
+    { -1, 1, 1 }, // STATE6
 };
 
 STM_BLDCMotor::STM_BLDCMotor()
@@ -98,7 +98,7 @@ int STM_BLDCMotor::getState()
 void STM_BLDCMotor::status_changed(void)
 {
   hole_state_no = 0;
-  int dir = (value_ >= 0.0) ? 1 : -2;
+  int dir = (value_ >= 0.0) ? 2 : -2;
   
   getHoleState();
   switch(hole_state){

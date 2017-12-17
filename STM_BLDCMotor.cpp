@@ -71,6 +71,7 @@ void STM_BLDCMotor::setPwmPeriod(double seconds)
 void STM_BLDCMotor::write(double value)
 {
   value_ = max(min(value, max_ratio_), -max_ratio_);
+  status_changed();
 }
 
 float STM_BLDCMotor::read()

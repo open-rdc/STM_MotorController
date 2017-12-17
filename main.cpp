@@ -342,7 +342,7 @@ int main() {
     }
     
     if ((is_status_changed)||(time_from_last_update >= 10)){
-      motor.status_changed();
+//      motor.status_changed();
       is_status_changed = false;
       time_from_last_update = 0;
     }

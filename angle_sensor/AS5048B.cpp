@@ -4,7 +4,7 @@
 #define SLAVE_ADRESS  0x40
 
 AS5048B::AS5048B(PinName i2c_sda, PinName i2c_scl):
-  i2c(i2c_sda, i2c_scl), angle0(0), error(0)
+  i2c(i2c_sda, i2c_scl), angle0(0), error(0), is_first(true)
 {
 }
 
@@ -50,6 +50,11 @@ void AS5048B::write(float value)
 
 float AS5048B::read()
 {  
+  if (is_first){
+    updateAngle();
+    wait(0.001);
+    is_first = false;
+  } 
   updateAngle();
   return angle;
 }

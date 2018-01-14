@@ -39,7 +39,7 @@ float AS5600::getAngleRad()
 
 float AS5600::getAngleDeg()
 {
-  return (float)(angle / M_PI * 180.0f);
+  return angle / M_PI * 180.0f;
 }
 
 int AS5600::getError()
@@ -54,7 +54,7 @@ void AS5600::resetError()
 
 void AS5600::write(float value)
 {
-  read();
+  updateAngle();
   angle0 = (angle + angle0) - value;
 }
 

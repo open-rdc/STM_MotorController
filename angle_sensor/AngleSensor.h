@@ -15,12 +15,12 @@
  * #include "AngleSensor.h"
  * #include "AS5600.h" 
  *
- * AS5048B as5048b(I2C_SDA, I2C_SCL);
+ * AS5600B as5600(I2C_SDA, I2C_SCL);
  * 
  * int main() {
  *   while(1) {
- *			AngleSensor *as = &as5048b;
- *     float angle = as->getAngleRad();
+ *			AngleSensor *as = &as5600;
+ *     float angle = as->read();
  *     printf("%f\r\n", angle);
  *     wait(0.5);
  *   }

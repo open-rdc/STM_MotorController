@@ -1,10 +1,6 @@
 #include "mbed.h"
 #include "AS5048B.h"
 
-#ifndef M_PI
-#define M_PI           3.14159265358979323846f
-#endif
-
 #define SLAVE_ADRESS  0x40
 
 AS5048B::AS5048B(PinName i2c_sda, PinName i2c_scl):
@@ -33,7 +29,7 @@ float AS5048B::getAngleRad()
 
 float AS5048B::getAngleDeg()
 {
-  return angle / M_PI * 180.0;
+  return angle / M_PI * 180.0f;
 }
 
 int AS5048B::getError()

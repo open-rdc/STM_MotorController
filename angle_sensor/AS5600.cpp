@@ -1,10 +1,6 @@
 #include "mbed.h"
 #include "AS5600.h"
 
-#ifndef M_PI
-#define M_PI           3.14159265358979323846f
-#endif
-
 #define SLAVE_ADRESS  0x36
 
 AS5600::AS5600(PinName i2c_sda, PinName i2c_scl):

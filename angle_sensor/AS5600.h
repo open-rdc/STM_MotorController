@@ -4,6 +4,7 @@
 #define AS5600_H
 
 #include "mbed.h"
+#include "AngleSensor.h"
 
 /** Class to measure angle using an absolute encoder AS5600
  *
@@ -30,24 +31,24 @@
  * }
  */
 
-class AS5600
+class AS5600 : public AngleSensor
 {
 public:
   AS5600(PinName i2c_sda, PinName i2c_scl);
 
-  void updateAngle();
+  virtual void updateAngle();
 
-  float getAngleRad();
+  virtual float getAngleRad();
 
-  float getAngleDeg();
+  virtual float getAngleDeg();
 
-  int getError();
+  virtual int getError();
 
-  void resetError();
+  virtual void resetError();
 
-  void write(float value);
+  virtual void write(float value);
 
-  float read();
+  virtual float read();
 
   AS5600& operator= (double value) {
     write(value);

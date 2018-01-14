@@ -4,6 +4,7 @@
 #define ASS5048B_H
 
 #include "mbed.h"
+#include "AngleSensor.h"
 
 /** Class to measure angle using an absolute encoder AS5048B
  *
@@ -30,24 +31,24 @@
  * }
  */
 
-class AS5048B
+class AS5048B : public AngleSensor
 {
 public:
   AS5048B(PinName i2c_sda, PinName i2c_scl);
 
-  void updateAngle();
+  virtual void updateAngle();
 
-  float getAngleRad();
+  virtual float getAngleRad();
 
-  float getAngleDeg();
+  virtual float getAngleDeg();
 
-  int getError();
+  virtual int getError();
 
-  void resetError();
+  virtual void resetError();
 
-void write(float value);
+  virtual void write(float value);
 
-  float read();
+  virtual float read();
 
   AS5048B& operator= (double value) {
     write(value);
@@ -57,7 +58,7 @@ void write(float value);
   operator float(){
     return read();
   }
-
+	
 private:
   I2C i2c;
   float angle;

@@ -3,8 +3,14 @@
 #ifndef STM_BLDCMOTOR_H
 #define STM_BLDCMOTOR_H
 
+#define USE_AS5048B
+
 #include "mbed.h"
-#include "AS5600.h" 
+#ifdef USE_AS5048B
+#include "AS5048B.h"
+#else
+#include "AS5600.h"
+#endif
 
 /** Class to control a motor on any pin, without using pwm pin
  *
@@ -22,7 +28,6 @@
  * }
  * @endcode
  */
-
 
 class STM_BLDCMotor
 {
@@ -87,9 +92,11 @@ private:
     double max_ratio_;
     bool enable_;
     int hole_state_no;
-
-    AS5600 as5600_;
-
+#ifdef USE_AS5048B
+    AS5048B angle_sensor_;
+#else
+    AS5600 angle_sensor_;
+#endif
     static int switching_table[6][3];
     void drive(int u, int v, int w);
 

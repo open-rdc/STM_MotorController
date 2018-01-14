@@ -10,7 +10,7 @@ RS485::RS485(PinName tx, PinName rx, PinName selectOut) :
   serial_.format(8, Serial::None, 1);
   recv_timer_.start();
   send_timer_.start();
-  serial_.attach(this, &RS485::rxFinishCallback, serial_.RxIrq);
+//  serial_.attach(this, &RS485::rxFinishCallback, serial_.RxIrq);
 }
 
 void RS485::baud(int baudrate){
@@ -37,6 +37,7 @@ bool RS485::isEnableSend()
 
 int RS485::putc(int c)
 {
+  serial_.attach(NULL, serial_.TxIrq);
   serial_.attach(this, &RS485::txFinishCallback, serial_.TxIrq);
   select_out_ = 1;
   return serial_.putc(c);

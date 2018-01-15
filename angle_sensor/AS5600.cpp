@@ -6,6 +6,7 @@
 AS5600::AS5600(PinName i2c_sda, PinName i2c_scl):
   i2c(i2c_sda, i2c_scl), angle0(0), error(0), is_first(true)
 {
+  wait(0.5);
 }
 
 void AS5600::updateAngle()

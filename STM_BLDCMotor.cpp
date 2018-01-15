@@ -24,9 +24,10 @@ int STM_BLDCMotor::switching_table[6] [3] = {
     { -1, 0, 1 }, // STATE6
 };
 
-STM_BLDCMotor::STM_BLDCMotor()
-  :  uh_(MOTOR_UH), ul_(MOTOR_UL), vh_(MOTOR_VH), vl_(MOTOR_VL), wh_(MOTOR_WH), wl_(MOTOR_WL),
-    st_(), max_ratio_(0.5), enable_(false), as5600_(I2C_SDA, I2C_SCL)
+STM_BLDCMotor::STM_BLDCMotor() :
+  uh_(MOTOR_UH), ul_(MOTOR_UL), vh_(MOTOR_VH), vl_(MOTOR_VL), wh_(MOTOR_WH), wl_(MOTOR_WL),
+  st_(), max_ratio_(0.5), enable_(false), hole_state_no(0), hole_state0_angle_(3.068711), 
+  angle_sensor_(I2C_SDA, I2C_SCL)  
 {
   st_.attach(callback(this, &STM_BLDCMotor::status_changed), SAMPLING_TIME);
   setPwmPeriod(1.0 / PWM_FREQUENCY);
@@ -70,29 +71,11 @@ float STM_BLDCMotor::read()
 
 int STM_BLDCMotor::getHoleState()
 {
-	static double hole_angle[] = {
-		3.068711, 2.917832333, 2.760306, 2.596640667, 2.48361, 2.313296667,
-		2.153212333, 2.020234667, 1.857592667, 1.705180333, 1.542538333, 1.437691,
-		1.251522333, 1.108827667, 0.964087, 0.808605333, 0.655169667, 0.498154,
-    0.381031667, 0.209183667, 0.049610667, -0.083366333, -0.241916667, -0.389215,
-		-0.553901667,  -0.657726667, -0.837246667, -0.988124333, -1.129285333, -1.278118,
-		-1.439736667, -1.597264, -1.707225667, -1.885723, -2.038135333, -2.169578667,
-		-2.327105667, -2.469800667, -2.632953667, -2.744450333, -2.917321333, -3.061039
-	};
-	float angle = as5600_;
-	float min_val = 1.0f;
-	int min_no = 0;
-	for(int i = 0; i < 42; i ++) {
-		float val = fabs(hole_angle[i] - angle);
-		if (val < -3.14159*2.0) val =+ 3.14159*2.0;
-		if (val > 3.14159*2.0) val =- 3.14159*2.0;
-		if (val < min_val){
-			min_val = val;
-			min_no = i;
-		}
-	}
-	hole_state_no = min_no % 6;
-	
+  const float angle_width = 2 * M_PI / 42;
+  float angle = hole_state0_angle_ + angle_width/2 + 2 * M_PI - angle_sensor_;
+  int min_no = (int)(angle / angle_width);
+  hole_state_no = min_no % 6;
+
   return hole_state_no;
 }
 
@@ -104,15 +87,14 @@ int STM_BLDCMotor::getState()
 void STM_BLDCMotor::status_changed(void)
 {
   hole_state_no = 0;
-  int dir = (value_ >= 0.0) ? 1 : -2;
+  int dir = (value_ > 0.0) ? 1 : (value_ < 0.0) ? -2 : 0;
   
   getHoleState();
   int next_state = (hole_state_no + dir + 6) % 6;
+  hole_state_no = next_state;
 
   if (enable_){
-    drive(switching_table[next_state][0],
-            switching_table[next_state][1],
-            switching_table[next_state][2]);
+    drive(switching_table[next_state][0], switching_table[next_state][1], switching_table[next_state][2]);
   } else {
     drive(0, 0, 0);
   }
@@ -121,9 +103,9 @@ void STM_BLDCMotor::status_changed(void)
 
 /*!
  * @brief drive for three phase motor
-* @param[in] u switch u line (1:High, 0: NC, -1: Low)
-* @param[in] v switch v line (1:High, 0: NC, -1: Low)
-* @param[in] w switch w line (1:High, 0: NC, -1: Low)
+ * @param[in] u switch u line (1:High, 0: NC, -1: Low)
+ * @param[in] v switch v line (1:High, 0: NC, -1: Low)
+ * @param[in] w switch w line (1:High, 0: NC, -1: Low)
  */
 void STM_BLDCMotor::drive(int u, int v, int w)
 {
@@ -136,4 +118,29 @@ void STM_BLDCMotor::drive(int u, int v, int w)
   vl_ = (v == -1) ? 1 : 0;
   wh_ = (w == 1) ? val : 0.0;
   wl_ = (w == -1) ? 1 : 0;
+}
+
+//#include "RS485.h"
+//RS485 rs485(RS485_TX, RS485_RX, RS485_SELECT);
+
+void STM_BLDCMotor::detectHoleState0(float duty_ratio)
+{
+  st_.detach();
+  value_ = duty_ratio;
+  for(int i = 5; i >= 0; i --) {
+    drive(switching_table[i][0], switching_table[i][1], switching_table[i][2]);
+    wait(0.3);
+  }
+  wait(2.0);
+  hole_state0_angle_ = 0;
+  for(int i = 0; i < 100; i ++) {
+    float angle = angle_sensor_;
+    hole_state0_angle_ += angle;
+//    rs485.printf("%f\r\n", angle);
+    wait(0.001);
+  }
+  hole_state0_angle_ /= 100;
+  value_ = 0.0;
+  drive(0, 0, 0);
+  st_.attach(callback(this, &STM_BLDCMotor::status_changed), SAMPLING_TIME);
 }

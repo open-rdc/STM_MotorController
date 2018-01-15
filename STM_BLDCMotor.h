@@ -57,6 +57,8 @@ public:
     void status_changed(void);
 
     void resetHoleSensorCount();
+		
+    void detectHoleState0(float duty_ratio);
 
 //#ifdef MBED_OPERATORS
     /** A operator shorthand for write()
@@ -92,6 +94,7 @@ private:
     double max_ratio_;
     bool enable_;
     int hole_state_no;
+    float hole_state0_angle_;
 #ifdef USE_AS5048B
     AS5048B angle_sensor_;
 #else

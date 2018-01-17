@@ -24,17 +24,33 @@ int STM_BLDCMotor::switching_table[6] [3] = {
     { -1, 0, 1 }, // STATE6
 };
 
-STM_BLDCMotor::STM_BLDCMotor() :
+STM_BLDCMotor::STM_BLDCMotor(AngleSensor *angle_sensor) :
   uh_(MOTOR_UH), ul_(MOTOR_UL), vh_(MOTOR_VH), vl_(MOTOR_VL), wh_(MOTOR_WH), wl_(MOTOR_WL),
-  st_(), max_ratio_(0.5), enable_(false), hole_state_no(0), hole_state0_angle_(3.068711), 
-  angle_sensor_(I2C_SDA, I2C_SCL)  
+  st_(), max_ratio_(0.5), enable_(false), hole_state_no(0), hole_state0_angle_(3.068711),
+  _angle(0)
 {
-  st_.attach(callback(this, &STM_BLDCMotor::status_changed), SAMPLING_TIME);
+  _angle_sensor = angle_sensor;
+  _thread = new Thread(&STM_BLDCMotor::angle_read_thread, this);
   setPwmPeriod(1.0 / PWM_FREQUENCY);
   ul_ = uh_ = vl_ = vh_ = wl_ = wh_ = 0;
   
   this->write(0);
 }
+
+void STM_BLDCMotor::angle_read_thread(void const *argument)
+{
+  STM_BLDCMotor *instance = (STM_BLDCMotor*)argument;
+  int prev_hole_state_no = -1;
+  while(true){
+    int hole_state_no = instance->getHoleState();
+    if (hole_state_no != prev_hole_state_no)
+    {
+      instance->status_changed();
+      prev_hole_state_no = hole_state_no;
+    }
+  }
+}
+
 
 void STM_BLDCMotor::servoOn(void)
 {
@@ -62,6 +78,7 @@ void STM_BLDCMotor::setPwmPeriod(double seconds)
 void STM_BLDCMotor::write(double value)
 {
   value_ = max(min(value, max_ratio_), -max_ratio_);
+  status_changed();
 }
 
 float STM_BLDCMotor::read()
@@ -72,9 +89,9 @@ float STM_BLDCMotor::read()
 int STM_BLDCMotor::getHoleState()
 {
   const float angle_width = 2 * M_PI / 42;
-  float angle = hole_state0_angle_ + angle_width/2 + 2 * M_PI - angle_sensor_;
-  int min_no = (int)(angle / angle_width);
-  hole_state_no = min_no % 6;
+  float angle = hole_state0_angle_ + angle_width/2 + 2 * M_PI - _angle_sensor->read();
+  int hole_no = (int)(angle / angle_width);
+  hole_state_no = hole_no % 6;
 
   return hole_state_no;
 }
@@ -86,19 +103,13 @@ int STM_BLDCMotor::getState()
 
 void STM_BLDCMotor::status_changed(void)
 {
-  hole_state_no = 0;
   int dir = (value_ > 0.0) ? 1 : (value_ < 0.0) ? -2 : 0;
-  
-  getHoleState();
   int next_state = (hole_state_no + dir + 6) % 6;
-  hole_state_no = next_state;
-
   if (enable_){
     drive(switching_table[next_state][0], switching_table[next_state][1], switching_table[next_state][2]);
   } else {
     drive(0, 0, 0);
   }
-	st_.attach(callback(this, &STM_BLDCMotor::status_changed), SAMPLING_TIME);
 }
 
 /*!
@@ -134,7 +145,7 @@ void STM_BLDCMotor::detectHoleState0(float duty_ratio)
   wait(2.0);
   hole_state0_angle_ = 0;
   for(int i = 0; i < 100; i ++) {
-    float angle = angle_sensor_;
+    float angle = _angle_sensor->read();
     hole_state0_angle_ += angle;
 //    rs485.printf("%f\r\n", angle);
     wait(0.001);

@@ -6,11 +6,8 @@
 #define USE_AS5048B
 
 #include "mbed.h"
-#ifdef USE_AS5048B
-#include "AS5048B.h"
-#else
-#include "AS5600.h"
-#endif
+#include "rtos.h"
+#include "AngleSensor.h"
 
 /** Class to control a motor on any pin, without using pwm pin
  *
@@ -36,7 +33,7 @@ public:
       *
       * @param Pin Pin on mbed to connect PWM device to
      */
-    STM_BLDCMotor();
+    STM_BLDCMotor(AngleSensor *angle_sensor);
 
     void servoOn(void);
 
@@ -95,11 +92,10 @@ private:
     bool enable_;
     int hole_state_no;
     float hole_state0_angle_;
-#ifdef USE_AS5048B
-    AS5048B angle_sensor_;
-#else
-    AS5600 angle_sensor_;
-#endif
+    AngleSensor *_angle_sensor;
+    float _angle;
+    Thread *_thread;
+    static void angle_read_thread(void const *argument);
     static int switching_table[6][3];
     void drive(int u, int v, int w);
 

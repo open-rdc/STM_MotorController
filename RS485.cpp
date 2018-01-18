@@ -1,52 +1,56 @@
 #include "RS485.h"
-#include "mbed.h"
 #include <stdarg.h>
 
+#define SEND_START_SIGNAL 1
+#define SEND_END_SIGNAL 2
+
 RS485::RS485(PinName tx, PinName rx, PinName selectOut) :
-    serial_(tx, rx), select_out_(selectOut), guard_time_us_(200), p_read(0), p_stock(0)
+  _serial(tx, rx), _select_out(selectOut),
+  _guard_time_us(200.0f),
+  _recv_thread(&RS485::recvThreadStarter, this, osPriorityNormal), _recv_buf(MAX_RECV_BUFFER),
+  _send_thread(&RS485::sendThreadStarter, this, osPriorityNormal), _send_buf(MAX_SEND_BUFFER)
 {
-  serial_.baud(115200);
-  select_out_ = 0;  // input
-  serial_.format(8, Serial::None, 1);
-  recv_timer_.start();
-  send_timer_.start();
-//  serial_.attach(this, &RS485::rxFinishCallback, serial_.RxIrq);
+  _serial.baud(1500000);
+  _select_out = 0;  // input
+  _serial.format(8, Serial::None, 1);
+  _recv_timer.start();
+  _send_timer.start();
 }
 
 void RS485::baud(int baudrate){
-  serial_.attach(NULL, serial_.RxIrq);
-  serial_.baud(baudrate);
-  wait(0.001);
-  serial_.attach(this, &RS485::rxFinishCallback, serial_.RxIrq);
+  _serial.baud(baudrate);
+  Thread::wait(1);
 }
 
 void RS485::guardTime(int guard_time_us){
-    guard_time_us_ = guard_time_us;
+    _guard_time_us = guard_time_us;
 }
 
 int RS485::readable()
 {
-  return serial_.readable();
+  return _serial.readable();
 }
 
 bool RS485::isEnableSend()
 {
-  if ((select_out_ == 0) && (recv_timer_.read_us() < guard_time_us_)) return false;
-  return true;
+  return !_send_buf.full();
 }
 
 int RS485::putc(int c)
 {
-  serial_.attach(NULL, serial_.TxIrq);
-  serial_.attach(this, &RS485::txFinishCallback, serial_.TxIrq);
-  select_out_ = 1;
-  return serial_.putc(c);
+  int res = (_send_buf.write(c)) ? 1 : 0;
+  _send_thread.signal_set(SEND_START_SIGNAL);
+  return res;
 }
 
 int RS485::getc()
 {
-  select_out_ = 0;
-  return serial_.getc();
+  unsigned char c;
+  while(true){
+    if (_recv_buf.read(&c)) break;
+    Thread::wait(1);
+  }
+  return (int)c;
 }
 
 int RS485::printf(const char* format, ...)
@@ -60,48 +64,75 @@ int RS485::printf(const char* format, ...)
   return 0;
 }
 
-void RS485::txFinishCallback(void)
-{
-  serial_.attach(NULL, serial_.TxIrq);
-  send_timer_.reset();
-  send_timer_.start();
-  select_out_ = 0;
-}
 
 ssize_t RS485::write(const void* buffer, size_t length)
 {
-  char *buf = (char *)buffer;
-  for(int i = 0; i < length; i ++){
-    select_out_ = 1;
-    serial_.putc((int)*buf++);
+  unsigned char *buf = (unsigned char *)buffer;
+  int res;
+  for(res = 0; res < length; res ++){
+    if (!_send_buf.write(*buf ++)) break;
   }
-  
-  return length;
+  _send_thread.signal_set(SEND_START_SIGNAL);
+  return res;
 }
 
 ssize_t RS485::read(void* buffer, size_t length)
 {
-  if (recv_timer_.read_us() < (guard_time_us_ / 2)) return 0;
   unsigned char *buf = (unsigned char *)buffer;
-  int len = p_stock - p_read;
-  if (len < 0) len += MAX_RECV_BUFFER;
-  if (len > length) len = length;
-  for(int i = 0; i < len; i ++){
-    *buf++ = rx_buf[p_read++];
-    if (p_read >= MAX_RECV_BUFFER) p_read = 0;
+  int res;
+  for(res = 0; res < length; res ++) {
+    if (!_recv_buf.read(buf)) break;
   }
-  return len;
+  return res;
 }
 
-void RS485::rxFinishCallback(void)
+void RS485::recvThreadStarter(void const *argument)
 {
-  if ((select_out_ == 1) || (send_timer_.read_us() < guard_time_us_)){
-    serial_.getc();
-    p_read = p_stock;
-  } else {
-    rx_buf[p_stock ++] = serial_.getc();
-    if (p_stock == MAX_RECV_BUFFER) p_stock = 0;
-    recv_timer_.reset();
-    recv_timer_.start();
+  RS485 *instance = (RS485*)argument;
+  instance->recvThread();
+}
+
+void RS485::recvThread()
+{
+  while(true) {
+    char c = _serial.getc();
+    if ((_select_out == 1) || (_send_timer.read_us() < _guard_time_us)) continue;
+    _recv_buf.write(c);
+    _recv_timer.reset();
+    _recv_timer.start();
   }
+}
+
+void RS485::sendThreadStarter(void const *argument)
+{
+  RS485 *instance = (RS485*)argument;
+  instance->sendThread();
+}
+
+void RS485::sendThread()
+{
+  while(true){
+    Thread::signal_wait(SEND_START_SIGNAL);
+    while(_send_buf.size() > 0) {
+      if (_recv_timer.read_us() < _guard_time_us){
+        Thread::wait(0);
+        continue;
+      }
+      _send_timer.reset();
+      _send_timer.start();
+      _select_out = 1;
+      unsigned char c;
+      _send_buf.read(&c);
+      _serial.putc(c);
+    }
+    wait_us(_guard_time_us);
+    _send_timer.reset();
+    _send_timer.start();
+    _select_out = 0;
+  }
+}
+
+void RS485::txFinishCallback(void)
+{
+  _send_thread.signal_set(SEND_END_SIGNAL);
 }
